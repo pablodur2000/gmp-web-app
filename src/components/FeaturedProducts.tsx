@@ -95,7 +95,7 @@ const FeaturedProducts = () => {
         <div className="grid md:grid-cols-3 gap-8 mb-12">
           {featuredProducts.map((product) => {
             const statusInfo = getInventoryStatusInfo(product.inventory_status)
-            const isPorEncargueSinStock = product.inventory_status === 'por_encargue_sin_stock'
+            const isPorEncargueSinStock = product.inventory_status === 'disponible_encargo_diferente_material'
             
             return (
               <div key={product.id} className="group">

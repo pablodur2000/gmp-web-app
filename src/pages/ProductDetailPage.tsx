@@ -19,7 +19,7 @@ const ProductDetailPage = () => {
       price: 45000,
       category: 'billeteras',
       available: true,
-      inventory_status: 'en_stock',
+      inventory_status: 'disponible_pieza_unica',
       images: [
         'https://f.fcdn.app/imgs/640e47/tienda.soysantander.com.uy/comp/6131/original/catalogo/BIGAIONAL_NAC41161005_1/1500-1500/billetera-de-cuero-garnie-nacional-oficial-negro.jpg',
         'https://f.fcdn.app/imgs/640e47/tienda.soysantander.com.uy/comp/6131/original/catalogo/BIGAIONAL_NAC41161005_1/1500-1500/billetera-de-cuero-garnie-nacional-oficial-negro.jpg',

@@ -25,7 +25,7 @@ const ProductEditForm = ({ product, onClose, onUpdate, logActivity }: ProductEdi
     categoryId: product.category_id || '',
     available: product.available ?? true,
     featured: product.featured ?? false,
-    inventory_status: product.inventory_status || 'en_stock'
+    inventory_status: product.inventory_status || 'disponible_pieza_unica'
   })
   const [images, setImages] = useState<File[]>([])
   const [existingImages, setExistingImages] = useState<string[]>(product.images || [])
@@ -340,11 +340,10 @@ const ProductEditForm = ({ product, onClose, onUpdate, logActivity }: ProductEdi
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-leather-500 focus:ring-leather-500"
             required
           >
-            <option value="en_stock">En stock</option>
-            <option value="por_encargue_con_stock">Por encargo (con stock)</option>
-            <option value="por_encargue_sin_stock">Por encargo (sin stock)</option>
-            <option value="pieza_unica">Pieza única</option>
-            <option value="sin_stock">Sin stock</option>
+            <option value="disponible_pieza_unica">Pieza Única</option>
+            <option value="disponible_encargo_mismo_material">Encargo Mismo Material</option>
+            <option value="disponible_encargo_diferente_material">Encargo Diferente Material</option>
+            <option value="no_disponible">No Disponible</option>
           </select>
         </div>
       </div>
