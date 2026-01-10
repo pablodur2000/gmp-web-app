@@ -15,7 +15,7 @@ const ProductDetailPage = () => {
       id: id || '1',
       title: 'Billetera de Cuero Premium',
       description: 'Billetera elegante hecha a mano con cuero genuino de primera calidad. Esta pieza única combina funcionalidad y estilo, con múltiples compartimentos para organizar tarjetas, billetes y monedas. El cuero premium garantiza durabilidad y un envejecimiento elegante con el tiempo.',
-      short_description: 'Billetera elegante de cuero genuino',
+              short_description: 'Billetera elegante de cuero genuino',
       price: 45000,
       category_id: 'billeteras',
       main_category: 'cuero',
@@ -27,8 +27,8 @@ const ProductDetailPage = () => {
         'https://f.fcdn.app/imgs/640e47/tienda.soysantander.com/uy/comp/6131/original/catalogo/BIGAIONAL_NAC41161005_1/1500-1500/billetera-de-cuero-garnie-nacional-oficial-negro.jpg'
       ],
       featured: true,
-      created_at: '2024-01-01',
-      updated_at: '2024-01-01'
+              created_at: '2024-01-01',
+        updated_at: '2024-01-01'
     }
     
     setProduct(mockProduct)

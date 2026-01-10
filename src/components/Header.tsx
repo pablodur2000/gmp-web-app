@@ -40,18 +40,23 @@ const Header = () => {
   const isActive = (path: string) => location.pathname === path
 
   return (
-    <header className="bg-white shadow-sm sticky top-0 z-50">
+    <header className="bg-white shadow-sm sticky top-0 z-50" data-testid="header">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
             <Link to="/" className="flex items-center">
               <div className="h-14 flex items-center justify-center">
-                <img src={logo} alt="Logo" className="h-full w-auto object-contain" />
+                <img 
+                  src={logo} 
+                  alt="Logo" 
+                  className="h-full w-auto object-contain"
+                  data-testid="header-logo"
+                />
               </div>
             </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-6">
+          <nav className="hidden md:flex items-center space-x-6" data-testid="header-nav">
             {navigation.map((item) => (
               <div key={item.name} className="relative">
                                  {item.hasDropdown ? (
@@ -64,7 +69,13 @@ const Header = () => {
                      onMouseEnter={() => setIsCatalogHovered(true)}
                      onMouseLeave={() => setIsCatalogHovered(false)}
                    >
-                     <Link to={item.href} className="flex items-center">{item.name}</Link>
+                     <Link 
+                       to={item.href} 
+                       className="flex items-center"
+                       data-testid={item.name === 'Catálogo' ? 'header-nav-catalog-link' : undefined}
+                     >
+                       {item.name}
+                     </Link>
                      <ChevronDown className="w-4 h-4" />
                      
                      {/* Dropdown Menu */}
@@ -104,6 +115,7 @@ const Header = () => {
                         ? 'text-leather-800 bg-leather-100'
                         : 'text-gray-600 hover:text-leather-800 hover:bg-leather-50'
                     }`}
+                    data-testid={item.name === 'Inicio' ? 'header-nav-home-link' : undefined}
                   >
                     {item.name}
                   </button>
@@ -127,6 +139,7 @@ const Header = () => {
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             className="md:hidden p-2 rounded-md text-gray-600 hover:text-leather-800 hover:bg-leather-50"
+            data-testid="header-mobile-menu-button"
           >
             {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
