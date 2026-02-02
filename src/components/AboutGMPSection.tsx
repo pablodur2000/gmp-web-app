@@ -36,10 +36,10 @@ const AboutGMPSection = () => {
   }, [])
 
   return (
-    <section id="sobre-gmp" className="py-16 bg-gradient-to-br from-leather-50 to-white">
+    <section id="sobre-gmp" className="py-16 bg-gradient-to-br from-leather-50 to-white" data-testid="home-about-gmp-section">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12">
-          <h2 className="text-3xl font-serif font-bold text-leather-800 mb-4">
+          <h2 className="text-3xl font-serif font-bold text-leather-800 mb-4" data-testid="home-about-gmp-heading">
             Sobre GMP
           </h2>
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
@@ -57,12 +57,13 @@ const AboutGMPSection = () => {
             }`}
             data-section="image"
           >
-            <div className="relative">
+            <div className="relative" data-testid="home-about-gmp-image-container">
               <div className="bg-leather-100 rounded-2xl p-8 overflow-hidden">
                 <img
                   src="https://media.istockphoto.com/id/1421303756/es/foto/joven-negra-que-trabaja-con-cuero.jpg?s=612x612&w=0&k=20&c=NkAq4LnhHMIZ5235P9CkEdkGlcRsiRn1wLpc-NAL--E="
                   alt="Gabriela Ponzoni trabajando con cuero"
                   className="w-full h-96 object-cover rounded-xl shadow-lg"
+                  data-testid="home-about-gmp-artisan-image"
                 />
               </div>
               
@@ -86,20 +87,20 @@ const AboutGMPSection = () => {
                 <User className="w-6 h-6 text-leather-600" />
               </div>
               <div>
-                <h3 className="text-2xl font-bold text-leather-800 mb-4">
+                <h3 className="text-2xl font-bold text-leather-800 mb-4" data-testid="home-about-gmp-artisan-name">
                   Gabriela Ponzoni
                 </h3>
-                <div className="space-y-4">
-                  <p className="text-gray-700 leading-relaxed">
+                <div className="space-y-4" data-testid="home-about-gmp-skills-container">
+                  <p className="text-gray-700 leading-relaxed" data-testid="home-about-gmp-description">
                     Artesana especializada en marroquinería y macramé con una pasión 
                     por crear piezas únicas que combinan tradición y modernidad.
                   </p>
-                  <p className="text-gray-700 leading-relaxed">
+                  <p className="text-gray-700 leading-relaxed" data-testid="home-about-gmp-skill-marroquineria">
                     <strong>Marroquinería:</strong> 2 años de estudio y práctica especializada en 
                     el trabajo con cuero, aprendiendo las técnicas tradicionales de corte, 
                     costura y acabado artesanal.
                   </p>
-                  <p className="text-gray-700 leading-relaxed">
+                  <p className="text-gray-700 leading-relaxed" data-testid="home-about-gmp-skill-macrame">
                     <strong>Macramé:</strong> 10 años de experiencia creando piezas únicas 
                     con nudos tradicionales, desarrollando un estilo propio que fusiona 
                     técnicas clásicas con diseños contemporáneos.
