@@ -39,7 +39,7 @@ const Header = ({ onOpenContact }: HeaderProps) => {
                 .select('*', { count: 'exact', head: true })
                 .eq('category_id', category.id)
                 .eq('available', true)
-                .neq('inventory_status', 'sin_stock')
+                .neq('inventory_status', 'no_disponible')
 
               return { ...category, product_count: count || 0 }
             })

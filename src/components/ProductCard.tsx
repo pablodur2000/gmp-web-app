@@ -18,7 +18,7 @@ const ProductCard = ({ product, viewMode }: ProductCardProps) => {
   }
 
   const statusInfo = getInventoryStatusInfo(product.inventory_status)
-  const isEncargoDiferenteMaterial = product.inventory_status === 'por_encargue_sin_stock'
+  const isEncargoDiferenteMaterial = product.inventory_status === 'disponible_encargo_diferente_material'
 
   if (viewMode === 'list') {
     return (

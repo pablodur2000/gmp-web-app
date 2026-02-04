@@ -14,6 +14,15 @@ interface InventoryStatusFilter {
   en_stock: boolean
 }
 
+/** Map UI filter keys to DB inventory_status values (PROD schema) */
+const INVENTORY_FILTER_TO_DB: Record<keyof InventoryStatusFilter, string> = {
+  pieza_unica: 'disponible_pieza_unica',
+  por_encargue_con_stock: 'disponible_encargo_mismo_material',
+  por_encargue_sin_stock: 'disponible_encargo_diferente_material',
+  sin_stock: 'no_disponible',
+  en_stock: 'disponible_pieza_unica'
+}
+
 interface PriceRangeFilter {
   lessThan50k: boolean
   between50k100k: boolean
@@ -86,7 +95,7 @@ const CatalogPage = () => {
             .select('*', { count: 'exact', head: true })
             .eq('category_id', category.id)
             .eq('available', true)
-            .neq('inventory_status', 'sin_stock')
+            .neq('inventory_status', 'no_disponible')
 
           if (countError) {
             console.error('Error counting products for category:', countError)
@@ -122,7 +131,7 @@ const CatalogPage = () => {
           )
         `)
         .eq('available', true)
-        .neq('inventory_status', 'sin_stock') // Hide sin_stock from public catalog
+        .neq('inventory_status', 'no_disponible') // Hide no_disponible from public catalog
         .order('created_at', { ascending: false })
 
       // Filter by main category if selected
@@ -154,10 +163,10 @@ const CatalogPage = () => {
         }
       }
 
-      // Filter by inventory status if any filters are active
+      // Filter by inventory status if any filters are active (map UI keys to DB values)
       const activeInventoryFilters = Object.entries(inventoryFilters)
         .filter(([_, isActive]) => isActive)
-        .map(([status, _]) => status)
+        .map(([status]) => INVENTORY_FILTER_TO_DB[status as keyof InventoryStatusFilter])
 
       if (activeInventoryFilters.length > 0) {
         console.log('Filtering by inventory status:', activeInventoryFilters)
@@ -238,7 +247,7 @@ const CatalogPage = () => {
           )
         `)
         .eq('available', true)
-        .neq('inventory_status', 'sin_stock') // Hide sin_stock from public catalog
+        .neq('inventory_status', 'no_disponible') // Hide no_disponible from public catalog
         .or(`title.ilike.%${searchValue}%,description.ilike.%${searchValue}%`)
         .order('created_at', { ascending: false })
 
@@ -263,10 +272,10 @@ const CatalogPage = () => {
         }
       }
 
-      // Filter by inventory status if any filters are active
+      // Filter by inventory status if any filters are active (map UI keys to DB values)
       const activeInventoryFilters = Object.entries(inventoryFilters)
         .filter(([_, isActive]) => isActive)
-        .map(([status, _]) => status)
+        .map(([status]) => INVENTORY_FILTER_TO_DB[status as keyof InventoryStatusFilter])
 
       if (activeInventoryFilters.length > 0) {
         console.log('Filtering by inventory status:', activeInventoryFilters)

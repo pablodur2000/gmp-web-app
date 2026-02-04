@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { X, Phone, MapPin, Instagram, MessageCircle, Send, Mail } from 'lucide-react'
+import { X, Phone, MapPin, Instagram, MessageCircle, Send } from 'lucide-react'
 import { supabase } from '../lib/supabase'
 
 interface ContactModalProps {

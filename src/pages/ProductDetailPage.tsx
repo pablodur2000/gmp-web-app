@@ -81,7 +81,7 @@ const ProductDetailPage = () => {
           .eq('category_id', product.category_id)
           .eq('available', true)
           .neq('id', product.id)
-          .neq('inventory_status', 'sin_stock')
+          .neq('inventory_status', 'no_disponible')
           .limit(4)
 
         if (error) {

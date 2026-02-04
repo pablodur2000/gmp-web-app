@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { LogOut, Plus, Edit, Package, X, CheckCircle, ShoppingBag, List, DollarSign, Eye, EyeOff, Sparkles, Save, Trash2, Bell, Mail } from 'lucide-react'
+import { LogOut, Plus, Package, X, CheckCircle, ShoppingBag, List, DollarSign, EyeOff, Sparkles, Save, Trash2, Bell, Mail } from 'lucide-react'
 import ProductForm from '../components/ProductForm'
 import ProductEditForm from '../components/ProductEditForm'
 import DeleteConfirmationModal from '../components/DeleteConfirmationModal'
