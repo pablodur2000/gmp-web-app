@@ -19,7 +19,8 @@ export default defineConfig({
       }
     }
   ],
-  base: '/gmp-web-app/',
+  // Vercel: set VITE_BASE_PATH=/ (or leave unset for root). GitHub Pages: set VITE_BASE_PATH=/gmp-web-app/
+  base: process.env.VITE_BASE_PATH ?? '/gmp-web-app/',
   server: {
     port: 3000,
     open: true
