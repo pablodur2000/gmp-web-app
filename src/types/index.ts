@@ -37,6 +37,7 @@ export interface NavigationItem {
   name: string
   href: string
   hasDropdown?: boolean
+  isModal?: boolean
 }
 
 export interface HeroSection {
@@ -45,12 +46,4 @@ export interface HeroSection {
   description: string
   ctaText: string
   backgroundImage: string
-}
-
-export interface Testimonial {
-  id: string
-  name: string
-  comment: string
-  rating: number
-  avatar?: string
 }

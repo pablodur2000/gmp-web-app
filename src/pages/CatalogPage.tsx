@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { Search, Grid, List } from 'lucide-react'
 import ProductCard from '../components/ProductCard'
 import CategoryFilter from '../components/CategoryFilter'
@@ -6,13 +7,21 @@ import { Product, Category } from '../types'
 import { supabase } from '../lib/supabase'
 
 interface InventoryStatusFilter {
-  disponible_pieza_unica: boolean
-  disponible_encargo_mismo_material: boolean
-  disponible_encargo_diferente_material: boolean
-  no_disponible: boolean
+  pieza_unica: boolean
+  por_encargue_con_stock: boolean
+  por_encargue_sin_stock: boolean
+  sin_stock: boolean
+  en_stock: boolean
+}
+
+interface PriceRangeFilter {
+  lessThan50k: boolean
+  between50k100k: boolean
+  moreThan100k: boolean
 }
 
 const CatalogPage = () => {
+  const [searchParams, setSearchParams] = useSearchParams()
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [selectedMainCategory, setSelectedMainCategory] = useState<string>('all')
@@ -21,11 +30,18 @@ const CatalogPage = () => {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [loading, setLoading] = useState(true)
   const [searchLoading, setSearchLoading] = useState(false)
+  const [isFiltering, setIsFiltering] = useState(false)
   const [inventoryFilters, setInventoryFilters] = useState<InventoryStatusFilter>({
-    disponible_pieza_unica: false,
-    disponible_encargo_mismo_material: false,
-    disponible_encargo_diferente_material: false,
-    no_disponible: false
+    pieza_unica: false,
+    por_encargue_con_stock: false,
+    por_encargue_sin_stock: false,
+    sin_stock: false,
+    en_stock: false
+  })
+  const [priceRangeFilters, setPriceRangeFilters] = useState<PriceRangeFilter>({
+    lessThan50k: false,
+    between50k100k: false,
+    moreThan100k: false
   })
 
   // Load categories with product counts
@@ -33,10 +49,18 @@ const CatalogPage = () => {
     loadCategories()
   }, [])
 
-  // Load products when category, main category, or inventory filters change
+  // Read category from URL on mount
+  useEffect(() => {
+    const categoriaParam = searchParams.get('categoria')
+    if (categoriaParam) {
+      setSelectedCategory(categoriaParam)
+    }
+  }, [searchParams])
+
+  // Load products when category, main category, inventory filters, or price filters change
   useEffect(() => {
     loadProducts()
-  }, [selectedCategory, selectedMainCategory, inventoryFilters])
+  }, [selectedCategory, selectedMainCategory, inventoryFilters, priceRangeFilters])
 
   const loadCategories = async () => {
     try {
@@ -62,13 +86,14 @@ const CatalogPage = () => {
             .select('*', { count: 'exact', head: true })
             .eq('category_id', category.id)
             .eq('available', true)
+            .neq('inventory_status', 'sin_stock')
 
           if (countError) {
             console.error('Error counting products for category:', countError)
-            return { ...category, productCount: 0 }
+            return { ...category, product_count: 0 }
           }
 
-          return { ...category, productCount: count || 0 }
+          return { ...category, product_count: count || 0 }
         })
       )
 
@@ -82,6 +107,7 @@ const CatalogPage = () => {
   const loadProducts = async () => {
     try {
       setLoading(true)
+      setIsFiltering(true)
       console.log('Loading products for category:', selectedCategory)
       console.log('Inventory filters:', inventoryFilters)
       
@@ -96,7 +122,7 @@ const CatalogPage = () => {
           )
         `)
         .eq('available', true)
-        .neq('inventory_status', 'no_disponible') // Hide no_disponible from public catalog
+        .neq('inventory_status', 'sin_stock') // Hide sin_stock from public catalog
         .order('created_at', { ascending: false })
 
       // Filter by main category if selected
@@ -146,12 +172,28 @@ const CatalogPage = () => {
         return
       }
 
-      console.log('Products loaded:', data?.length || 0)
-      console.log('Products data:', data)
+      // Filter by price range in memory (allows multiple ranges with OR logic)
+      let filteredData = data
+      const activePriceFilters = Object.entries(priceRangeFilters)
+        .filter(([_, isActive]) => isActive)
+        .map(([range, _]) => range)
+
+      if (activePriceFilters.length > 0) {
+        console.log('Filtering by price range:', activePriceFilters)
+        filteredData = data?.filter(product => {
+          if (priceRangeFilters.lessThan50k && product.price < 50000) return true
+          if (priceRangeFilters.between50k100k && product.price >= 50000 && product.price <= 100000) return true
+          if (priceRangeFilters.moreThan100k && product.price > 100000) return true
+          return false
+        })
+      }
+
+      console.log('Products loaded:', filteredData?.length || 0)
+      console.log('Products data:', filteredData)
       
       // Log each product's category information
-      if (data) {
-        data.forEach((product, index) => {
+      if (filteredData) {
+        filteredData.forEach((product, index) => {
           console.log(`Product ${index + 1}:`, {
             title: product.title,
             category_id: product.category_id,
@@ -160,10 +202,16 @@ const CatalogPage = () => {
           })
         })
       }
+
+      setProducts(filteredData || [])
       
-      setProducts(data || [])
+      // Small delay to allow smooth animation
+      setTimeout(() => {
+        setIsFiltering(false)
+      }, 100)
     } catch (error) {
       console.error('Error loading products:', error)
+      setIsFiltering(false)
     } finally {
       setLoading(false)
     }
@@ -190,7 +238,7 @@ const CatalogPage = () => {
           )
         `)
         .eq('available', true)
-        .neq('inventory_status', 'no_disponible') // Hide no_disponible from public catalog
+        .neq('inventory_status', 'sin_stock') // Hide sin_stock from public catalog
         .or(`title.ilike.%${searchValue}%,description.ilike.%${searchValue}%`)
         .order('created_at', { ascending: false })
 
@@ -232,7 +280,23 @@ const CatalogPage = () => {
         return
       }
 
-      setProducts(data || [])
+      // Filter by price range in memory (allows multiple ranges with OR logic)
+      let filteredData = data
+      const activePriceFilters = Object.entries(priceRangeFilters)
+        .filter(([_, isActive]) => isActive)
+        .map(([range, _]) => range)
+
+      if (activePriceFilters.length > 0) {
+        console.log('Filtering by price range in search:', activePriceFilters)
+        filteredData = data?.filter(product => {
+          if (priceRangeFilters.lessThan50k && product.price < 50000) return true
+          if (priceRangeFilters.between50k100k && product.price >= 50000 && product.price <= 100000) return true
+          if (priceRangeFilters.moreThan100k && product.price > 100000) return true
+          return false
+        })
+      }
+
+      setProducts(filteredData || [])
     } catch (error) {
       console.error('Error searching products:', error)
     } finally {
@@ -259,13 +323,28 @@ const CatalogPage = () => {
   // Handle category change
   const handleCategoryChange = (category: string) => {
     console.log('Category changed to:', category)
+    setIsFiltering(true)
     setSelectedCategory(category)
     setSearchTerm('') // Clear search when category changes
+    
+    // Update URL parameter
+    if (category === 'all') {
+      setSearchParams({})
+    } else {
+      setSearchParams({ categoria: category })
+    }
   }
 
   // Handle inventory filter change
   const handleInventoryFilterChange = (filters: InventoryStatusFilter) => {
+    setIsFiltering(true)
     setInventoryFilters(filters)
+    setSearchTerm('') // Clear search when filters change
+  }
+
+  const handlePriceRangeFilterChange = (filters: PriceRangeFilter) => {
+    setIsFiltering(true)
+    setPriceRangeFilters(filters)
     setSearchTerm('') // Clear search when filters change
   }
 
@@ -304,6 +383,8 @@ const CatalogPage = () => {
               onCategoryChange={handleCategoryChange}
               inventoryFilters={inventoryFilters}
               onInventoryFilterChange={handleInventoryFilterChange}
+              priceRangeFilters={priceRangeFilters}
+              onPriceRangeFilterChange={handlePriceRangeFilterChange}
             />
           </div>
 
@@ -320,6 +401,7 @@ const CatalogPage = () => {
                       ? 'bg-leather-600 text-white'
                       : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                   }`}
+                  data-testid="catalog-main-category-all"
                 >
                   Todas
                 </button>
@@ -330,6 +412,7 @@ const CatalogPage = () => {
                       ? 'bg-leather-600 text-white'
                       : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                   }`}
+                  data-testid="catalog-main-category-cuero"
                 >
                   Cuero
                 </button>
@@ -340,6 +423,7 @@ const CatalogPage = () => {
                       ? 'bg-leather-600 text-white'
                       : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                   }`}
+                  data-testid="catalog-main-category-macrame"
                 >
                   Macramé
                 </button>
@@ -356,6 +440,7 @@ const CatalogPage = () => {
                   value={searchTerm}
                   onChange={handleSearchChange}
                   className="input-field pl-10"
+                  data-testid="catalog-search-input"
                 />
                 {searchLoading && (
                   <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
@@ -372,6 +457,8 @@ const CatalogPage = () => {
                       ? 'bg-leather-100 text-leather-800' 
                       : 'text-gray-400 hover:text-leather-800'
                   }`}
+                  data-testid="catalog-view-toggle-grid"
+                  aria-label="Grid view"
                 >
                   <Grid className="w-5 h-5" />
                 </button>
@@ -382,6 +469,8 @@ const CatalogPage = () => {
                       ? 'bg-leather-100 text-leather-800' 
                       : 'text-gray-400 hover:text-leather-800'
                   }`}
+                  data-testid="catalog-view-toggle-list"
+                  aria-label="List view"
                 >
                   <List className="w-5 h-5" />
                 </button>
@@ -390,7 +479,7 @@ const CatalogPage = () => {
 
             {/* Results Count */}
             <div className="mb-6">
-              <p className="text-gray-600">
+              <p className="text-gray-600" data-testid="catalog-product-count">
                 Mostrando {products.length} productos
                 {selectedMainCategory !== 'all' && (
                   <>
@@ -417,21 +506,33 @@ const CatalogPage = () => {
 
             {/* Products Grid */}
             {products.length > 0 ? (
-              <div className={`grid gap-6 ${
-                viewMode === 'grid' 
-                  ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' 
-                  : 'grid-cols-1'
-              }`}>
-                {products.map((product) => (
-                  <ProductCard 
-                    key={product.id} 
-                    product={product} 
-                    viewMode={viewMode}
-                  />
+              <div 
+                className={`grid gap-6 ${
+                  viewMode === 'grid' 
+                    ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' 
+                    : 'grid-cols-1'
+                }`}
+                data-testid="catalog-product-list"
+              >
+                {products.map((product, index) => (
+                  <div
+                    key={product.id}
+                    className="transition-all duration-300 ease-out"
+                    style={{
+                      animation: `fadeInScale 0.3s ease-out forwards`,
+                      animationDelay: `${index * 0.03}s`,
+                      opacity: isFiltering ? 0 : 1
+                    }}
+                  >
+                    <ProductCard 
+                      product={product} 
+                      viewMode={viewMode}
+                    />
+                  </div>
                 ))}
               </div>
             ) : (
-              <div className="text-center py-12">
+              <div className="text-center py-12" data-testid="catalog-empty-state">
                 <div className="w-24 h-24 bg-leather-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Search className="w-12 h-12 text-leather-400" />
                 </div>

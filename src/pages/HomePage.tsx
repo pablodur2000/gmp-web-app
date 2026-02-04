@@ -62,10 +62,10 @@ const HomePage = () => {
       <HeroSection />
 
       {/* Location Section */}
-      <section className="py-16 bg-gradient-to-br from-leather-50 to-white">
+      <section className="py-16 bg-gradient-to-br from-leather-50 to-white" data-testid="home-location-section">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-serif font-bold text-leather-800 mb-4">
+            <h2 className="text-3xl font-serif font-bold text-leather-800 mb-4" data-testid="home-location-heading">
               Ubicación
             </h2>
 
@@ -81,6 +81,7 @@ const HomePage = () => {
                     : '-translate-x-16 opacity-0'
                 }`}
                 data-section="location"
+                data-testid="home-location-info-card-tienda-fisica"
               >
                 <div className="w-12 h-12 bg-leather-100 rounded-xl flex items-center justify-center flex-shrink-0">
                   <MapPin className="w-6 h-6 text-leather-600" />
@@ -93,10 +94,10 @@ const HomePage = () => {
                     <p className="text-gray-600 leading-relaxed">
                       Nuestra tienda está ubicada físicamente en el local llamado <strong className="text-leather-700">Paquetitos</strong>.
                     </p>
-                    <div className="bg-leather-50 rounded-lg p-3 border border-leather-200">
+                    <div className="bg-leather-50 rounded-lg p-3 border border-leather-200" data-testid="home-location-address-card">
                       <div className="flex justify-between items-center">
                         <div>
-                          <p className="text-sm font-medium text-leather-800">
+                          <p className="text-sm font-medium text-leather-800" data-testid="home-location-address-text">
                             📍 José Pedro Varela 451
                           </p>
                           <p className="text-xs text-leather-600">
@@ -106,6 +107,7 @@ const HomePage = () => {
                         <button
                           onClick={() => setShowMapModal(true)}
                           className="ml-4 inline-flex items-center space-x-2 text-leather-600 hover:text-leather-800 transition-colors duration-200 cursor-pointer"
+                          data-testid="home-location-ver-mapa-button"
                         >
                           <ExternalLink className="w-5 h-5" />
                           <span className="text-sm font-medium">Ver mapa</span>
@@ -123,6 +125,7 @@ const HomePage = () => {
                     : '-translate-x-16 opacity-0'
                 }`}
                 data-section="shipping"
+                data-testid="home-location-info-card-envios"
               >
                 <div className="w-12 h-12 bg-leather-100 rounded-xl flex items-center justify-center flex-shrink-0">
                   <Truck className="w-6 h-6 text-leather-600" />
@@ -145,6 +148,7 @@ const HomePage = () => {
                     : '-translate-x-16 opacity-0'
                 }`}
                 data-section="quality"
+                data-testid="home-location-info-card-garantia"
               >
                 <div className="w-12 h-12 bg-leather-100 rounded-xl flex items-center justify-center flex-shrink-0">
                   <Shield className="w-6 h-6 text-leather-600" />
@@ -177,7 +181,7 @@ const HomePage = () => {
                 <h3 className="text-2xl font-bold text-leather-800 mb-3">
                   Paquetitos
                 </h3>
-                <p className="text-leather-700 mb-2">
+                <p className="text-leather-700 mb-2" data-testid="home-location-map-address">
                   José Pedro Varela 451
                 </p>
                 <p className="text-leather-600 mb-6 text-sm">
@@ -195,6 +199,7 @@ const HomePage = () => {
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center space-x-2 bg-leather-600 hover:bg-leather-700 text-white px-4 py-2 rounded-full transition-colors duration-200"
+                    data-testid="home-location-rastrear-envio-link"
                   >
                     <span className="text-sm font-medium">Rastrear Envío</span>
                   </a>
@@ -216,7 +221,7 @@ const HomePage = () => {
       <AboutGMPSection />
 
       {/* CTA Section */}
-      <section className="py-16 bg-leather-800">
+      <section className="py-16 bg-leather-800" data-testid="home-cta-section">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl font-serif font-bold text-white mb-4">
             ¿Listo para descubrir nuestras artesanías?
@@ -227,6 +232,7 @@ const HomePage = () => {
           <Link
             to="/catalogo"
             className="inline-flex items-center space-x-2 bg-white text-leather-800 hover:bg-leather-50 font-semibold py-4 px-8 rounded-lg transition-colors duration-200"
+            data-testid="home-cta-catalog-link"
           >
             <span>Ver Catálogo Completo</span>
             <ArrowRight className="w-5 h-5" />

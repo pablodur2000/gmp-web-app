@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { Eye, EyeOff, Lock, Mail } from 'lucide-react'
@@ -10,6 +10,15 @@ const AdminLoginPage = () => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const navigate = useNavigate()
+
+  // Set page title
+  useEffect(() => {
+    document.title = 'Admin Login - Artesanías en Cuero'
+    return () => {
+      // Reset to default title when component unmounts
+      document.title = 'Artesanías en Cuero - Catálogo Familiar'
+    }
+  }, [])
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -48,7 +57,7 @@ const AdminLoginPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-leather-50 to-white flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-leather-50 to-white flex items-center justify-center p-4" data-testid="admin-login-page">
       <div className="max-w-md w-full space-y-8">
         {/* Header */}
         <div className="text-center">
@@ -85,6 +94,7 @@ const AdminLoginPage = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-leather-500 focus:border-leather-500"
                   placeholder="admin@example.com"
+                  data-testid="admin-login-email-input"
                 />
               </div>
             </div>
@@ -108,6 +118,7 @@ const AdminLoginPage = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   className="block w-full pl-10 pr-12 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-leather-500 focus:border-leather-500"
                   placeholder="••••••••"
+                  data-testid="admin-login-password-input"
                 />
                 <button
                   type="button"
@@ -136,6 +147,7 @@ const AdminLoginPage = () => {
             type="submit"
             disabled={loading}
             className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-leather-600 hover:bg-leather-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-leather-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
+            data-testid="admin-login-submit-button"
           >
             {loading ? (
               <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>

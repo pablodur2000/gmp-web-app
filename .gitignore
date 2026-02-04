@@ -31,3 +31,51 @@ dist-ssr
 .env.test.local
 .env.production.local
 
+# Build outputs and cache
+.vite
+.cache
+*.tsbuildinfo
+
+# Testing
+coverage
+.nyc_output
+
+# OS files
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+
+# ESLint cache
+.eslintcache
+
+# Additional IDE files
+*.code-workspace
+.vscode/settings.json
+.vscode/launch.json
+.vscode/tasks.json
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/dictionaries
+.idea/shelf
+
+# Additional OS files
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Desktop.ini
+
+# Backup files
+*.bak
+*.backup
+*~
+*.orig
+
+# Project-specific temporary analysis files
+COMMIT_ANALYSIS.md
+CATALOG_MENU_FIXES.md
+PRODUCT_DETAIL_*.md
+UNFINISHED_PARTS_ANALYSIS.md

@@ -2,7 +2,11 @@ import { Link } from 'react-router-dom'
 import { Phone, MapPin, Instagram, Facebook, MessageCircle } from 'lucide-react'
 import logo from '../img/logo.png'
 
-const Footer = () => {
+interface FooterProps {
+  onOpenContact: () => void
+}
+
+const Footer = ({ onOpenContact }: FooterProps) => {
   return (
     <footer className="bg-leather-900 text-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -18,7 +22,7 @@ const Footer = () => {
             {/* Social Links */}
             <div className="flex space-x-4">
               <a
-                href="https://instagram.com"
+                href="https://www.instagram.com/gmp.artesanias/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-10 h-10 bg-leather-800 rounded-full flex items-center justify-center text-leather-200 hover:bg-leather-700 hover:text-white transition-colors duration-200"
@@ -72,9 +76,12 @@ const Footer = () => {
                 </button>
               </li>
               <li>
-                <Link to="/contacto" className="text-leather-200 hover:text-white transition-colors duration-200">
+                <button
+                  onClick={onOpenContact}
+                  className="text-leather-200 hover:text-white transition-colors duration-200 text-left"
+                >
                   Contacto
-                </Link>
+                </button>
               </li>
             </ul>
           </div>

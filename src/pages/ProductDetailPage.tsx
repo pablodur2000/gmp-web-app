@@ -1,44 +1,109 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { ArrowLeft, Heart, ShoppingCart, Share2, Truck, Shield, RefreshCw } from 'lucide-react'
+import { ArrowLeft, Instagram, MessageCircle } from 'lucide-react'
 import { Product } from '../types'
+import { supabase } from '../lib/supabase'
+import { getInventoryStatusInfo } from '../utils/inventoryStatus'
+import ProductCard from '../components/ProductCard'
 
 const ProductDetailPage = () => {
   const { id } = useParams<{ id: string }>()
   const [product, setProduct] = useState<Product | null>(null)
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([])
   const [selectedImage, setSelectedImage] = useState(0)
   const [loading, setLoading] = useState(true)
+  const [loadingRelated, setLoadingRelated] = useState(false)
 
+  // Load product from database
   useEffect(() => {
-    // Mock product data - replace with Supabase query
-    const mockProduct: Product = {
-      id: id || '1',
-      title: 'Billetera de Cuero Premium',
-      description: 'Billetera elegante hecha a mano con cuero genuino de primera calidad. Esta pieza única combina funcionalidad y estilo, con múltiples compartimentos para organizar tarjetas, billetes y monedas. El cuero premium garantiza durabilidad y un envejecimiento elegante con el tiempo.',
-              short_description: 'Billetera elegante de cuero genuino',
-      price: 45000,
-      category_id: 'billeteras',
-      main_category: 'cuero',
-      available: true,
-      inventory_status: 'disponible_pieza_unica',
-      images: [
-        'https://f.fcdn.app/imgs/640e47/tienda.soysantander.com.uy/comp/6131/original/catalogo/BIGAIONAL_NAC41161005_1/1500-1500/billetera-de-cuero-garnie-nacional-oficial-negro.jpg',
-        'https://f.fcdn.app/imgs/640e47/tienda.soysantander.com.uy/comp/6131/original/catalogo/BIGAIONAL_NAC41161005_1/1500-1500/billetera-de-cuero-garnie-nacional-oficial-negro.jpg',
-        'https://f.fcdn.app/imgs/640e47/tienda.soysantander.com/uy/comp/6131/original/catalogo/BIGAIONAL_NAC41161005_1/1500-1500/billetera-de-cuero-garnie-nacional-oficial-negro.jpg'
-      ],
-      featured: true,
-              created_at: '2024-01-01',
-        updated_at: '2024-01-01'
+    const loadProduct = async () => {
+      if (!id) {
+        setLoading(false)
+        return
+      }
+
+      try {
+        setLoading(true)
+        
+        const { data, error } = await supabase
+          .from('products')
+          .select(`
+            *,
+            categories (
+              id,
+              name,
+              description,
+              main_category
+            )
+          `)
+          .eq('id', id)
+          .single()
+
+        if (error) {
+          console.error('Error loading product:', error)
+          setProduct(null)
+          return
+        }
+
+        if (data) {
+          setProduct(data as Product)
+        } else {
+          setProduct(null)
+        }
+      } catch (error) {
+        console.error('Error loading product:', error)
+        setProduct(null)
+      } finally {
+        setLoading(false)
+      }
     }
-    
-    setProduct(mockProduct)
-    setLoading(false)
+
+    loadProduct()
   }, [id])
 
+  // Load related products
+  useEffect(() => {
+    const loadRelatedProducts = async () => {
+      if (!product) return
+
+      try {
+        setLoadingRelated(true)
+        
+        const { data, error } = await supabase
+          .from('products')
+          .select(`
+            *,
+            categories (
+              id,
+              name
+            )
+          `)
+          .eq('category_id', product.category_id)
+          .eq('available', true)
+          .neq('id', product.id)
+          .neq('inventory_status', 'sin_stock')
+          .limit(4)
+
+        if (error) {
+          console.error('Error loading related products:', error)
+          return
+        }
+
+        setRelatedProducts(data || [])
+      } catch (error) {
+        console.error('Error loading related products:', error)
+      } finally {
+        setLoadingRelated(false)
+      }
+    }
+
+    loadRelatedProducts()
+  }, [product])
+
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('es-CO', {
+    return new Intl.NumberFormat('es-UY', {
       style: 'currency',
-      currency: 'COP',
+      currency: 'UYU',
       minimumFractionDigits: 0
     }).format(price)
   }
@@ -83,34 +148,50 @@ const ProductDetailPage = () => {
         <div className="grid lg:grid-cols-2 gap-12">
           {/* Product Images */}
           <div>
-            <div className="aspect-square rounded-xl overflow-hidden bg-white shadow-lg mb-4">
-              <img
-                src={product.images[selectedImage]}
-                alt={product.title}
-                className="w-full h-full object-cover"
-              />
-            </div>
-            
-            {/* Thumbnail Images */}
-            <div className="flex space-x-2">
-              {product.images.map((image, index) => (
-                <button
-                  key={index}
-                  onClick={() => setSelectedImage(index)}
-                  className={`w-20 h-20 rounded-lg overflow-hidden border-2 transition-colors duration-200 ${
-                    selectedImage === index 
-                      ? 'border-leather-600' 
-                      : 'border-gray-200 hover:border-leather-300'
-                  }`}
-                >
+            {product.images && product.images.length > 0 ? (
+              <>
+                <div className="aspect-square rounded-xl overflow-hidden bg-white shadow-lg mb-4">
                   <img
-                    src={image}
-                    alt={`${product.title} ${index + 1}`}
+                    src={product.images[selectedImage] || product.images[0]}
+                    alt={product.title}
                     className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = 'https://via.placeholder.com/500?text=Imagen+no+disponible'
+                    }}
                   />
-                </button>
-              ))}
-            </div>
+                </div>
+                
+                {/* Thumbnail Images */}
+                {product.images.length > 1 && (
+                  <div className="flex space-x-2">
+                    {product.images.map((image, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setSelectedImage(index)}
+                        className={`w-20 h-20 rounded-lg overflow-hidden border-2 transition-colors duration-200 ${
+                          selectedImage === index 
+                            ? 'border-leather-600' 
+                            : 'border-gray-200 hover:border-leather-300'
+                        }`}
+                      >
+                        <img
+                          src={image}
+                          alt={`${product.title} ${index + 1}`}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = 'https://via.placeholder.com/80?text=Error'
+                          }}
+                        />
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="aspect-square rounded-xl overflow-hidden bg-gray-200 shadow-lg mb-4 flex items-center justify-center">
+                <span className="text-gray-400">Sin imagen</span>
+              </div>
+            )}
           </div>
 
           {/* Product Info */}
@@ -146,11 +227,26 @@ const ProductDetailPage = () => {
             </div>
 
             {/* Price */}
-            <div className="mb-6">
+            <div className="mb-4">
               <span className="text-3xl font-bold text-leather-800">
                 {formatPrice(product.price)}
               </span>
             </div>
+
+            {/* Inventory Status */}
+            {product.inventory_status && (() => {
+              const statusInfo = getInventoryStatusInfo(product.inventory_status)
+              return (
+                <div className="mb-6">
+                  <span className={`px-3 py-1 rounded-full text-xs font-medium ${statusInfo.bgColor} ${statusInfo.color}`}>
+                    {statusInfo.label}
+                  </span>
+                  {statusInfo.message && (
+                    <p className="text-sm text-gray-600 mt-2">{statusInfo.message}</p>
+                  )}
+                </div>
+              )
+            })()}
 
             {/* Description */}
             <div className="mb-6">
@@ -183,40 +279,37 @@ const ProductDetailPage = () => {
               </ul>
             </div>
 
-            {/* Actions */}
+            {/* Contact Actions */}
             <div className="space-y-4 mb-8">
-              <button className="w-full btn-primary flex items-center justify-center space-x-2">
-                <ShoppingCart className="w-5 h-5" />
-                <span>Agregar al Carrito</span>
-              </button>
+              <a
+                href="https://www.instagram.com/gmp.artesanias/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full btn-primary flex items-center justify-center space-x-2"
+              >
+                <Instagram className="w-5 h-5" />
+                <span>Ver en Instagram</span>
+              </a>
               
               <div className="flex space-x-3">
-                <button className="flex-1 btn-secondary flex items-center justify-center space-x-2">
-                  <Heart className="w-5 h-5" />
-                  <span>Favoritos</span>
-                </button>
-                <button className="flex-1 btn-secondary flex items-center justify-center space-x-2">
-                  <Share2 className="w-5 h-5" />
-                  <span>Compartir</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Benefits */}
-            <div className="border-t border-gray-200 pt-6">
-              <div className="grid grid-cols-3 gap-4 text-center">
-                <div className="flex flex-col items-center space-y-2">
-                  <Truck className="w-6 h-6 text-leather-600" />
-                  <span className="text-sm text-gray-600">Envío Gratis</span>
-                </div>
-                <div className="flex flex-col items-center space-y-2">
-                  <Shield className="w-6 h-6 text-leather-600" />
-                  <span className="text-sm text-gray-600">Garantía</span>
-                </div>
-                <div className="flex flex-col items-center space-y-2">
-                  <RefreshCw className="w-6 h-6 text-leather-600" />
-                  <span className="text-sm text-gray-600">Devolución</span>
-                </div>
+                <a
+                  href="https://www.instagram.com/gmp.artesanias/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 btn-secondary flex items-center justify-center space-x-2"
+                >
+                  <MessageCircle className="w-5 h-5" />
+                  <span>Mensaje Instagram</span>
+                </a>
+                <a
+                  href="https://wa.me/59898702414"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 btn-secondary flex items-center justify-center space-x-2"
+                >
+                  <MessageCircle className="w-5 h-5" />
+                  <span>WhatsApp</span>
+                </a>
               </div>
             </div>
           </div>
@@ -227,16 +320,33 @@ const ProductDetailPage = () => {
           <h2 className="text-2xl font-serif font-bold text-leather-800 mb-8">
             Productos Relacionados
           </h2>
-          <div className="grid md:grid-cols-4 gap-6">
-            {/* Placeholder for related products */}
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="bg-white rounded-lg shadow-sm p-4">
-                <div className="aspect-square bg-gray-200 rounded-lg mb-3"></div>
-                <div className="h-4 bg-gray-200 rounded mb-2"></div>
-                <div className="h-3 bg-gray-200 rounded w-2/3"></div>
-              </div>
-            ))}
-          </div>
+          {loadingRelated ? (
+            <div className="grid md:grid-cols-4 gap-6">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="bg-white rounded-lg shadow-sm p-4 animate-pulse">
+                  <div className="aspect-square bg-gray-200 rounded-lg mb-3"></div>
+                  <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                  <div className="h-3 bg-gray-200 rounded w-2/3"></div>
+                </div>
+              ))}
+            </div>
+          ) : relatedProducts.length > 0 ? (
+            <div className="grid md:grid-cols-4 gap-6">
+              {relatedProducts.map((relatedProduct) => (
+                <ProductCard 
+                  key={relatedProduct.id} 
+                  product={relatedProduct} 
+                  viewMode="grid"
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-gray-500">
+                No hay productos relacionados disponibles en esta categoría.
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>

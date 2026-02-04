@@ -2,10 +2,17 @@
 import { Category } from '../types'
 
 interface InventoryStatusFilter {
-  disponible_pieza_unica: boolean
-  disponible_encargo_mismo_material: boolean
-  disponible_encargo_diferente_material: boolean
-  no_disponible: boolean
+  pieza_unica: boolean
+  por_encargue_con_stock: boolean
+  por_encargue_sin_stock: boolean
+  sin_stock: boolean
+  en_stock: boolean
+}
+
+interface PriceRangeFilter {
+  lessThan50k: boolean
+  between50k100k: boolean
+  moreThan100k: boolean
 }
 
 interface CategoryFilterProps {
@@ -14,6 +21,8 @@ interface CategoryFilterProps {
   onCategoryChange: (category: string) => void
   inventoryFilters: InventoryStatusFilter
   onInventoryFilterChange: (filters: InventoryStatusFilter) => void
+  priceRangeFilters: PriceRangeFilter
+  onPriceRangeFilterChange: (filters: PriceRangeFilter) => void
 }
 
 const CategoryFilter = ({ 
@@ -21,7 +30,9 @@ const CategoryFilter = ({
   selectedCategory, 
   onCategoryChange,
   inventoryFilters,
-  onInventoryFilterChange
+  onInventoryFilterChange,
+  priceRangeFilters,
+  onPriceRangeFilterChange
 }: CategoryFilterProps) => {
   const totalProducts = categories.reduce((total, cat) => total + (cat.product_count || 0), 0)
 
@@ -34,6 +45,15 @@ const CategoryFilter = ({
   }
 
   const hasActiveInventoryFilters = Object.values(inventoryFilters).some(filter => filter)
+  const hasActivePriceFilters = Object.values(priceRangeFilters).some(filter => filter)
+
+  const handlePriceRangeFilterChange = (range: keyof PriceRangeFilter) => {
+    const newFilters = {
+      ...priceRangeFilters,
+      [range]: !priceRangeFilters[range]
+    }
+    onPriceRangeFilterChange(newFilters)
+  }
 
   return (
     <div className="bg-white rounded-lg shadow-sm p-6">
@@ -50,6 +70,7 @@ const CategoryFilter = ({
               ? 'bg-leather-100 text-leather-800 font-medium'
               : 'text-gray-600 hover:bg-leather-50 hover:text-leather-800'
           }`}
+          data-testid="catalog-subcategory-filter-all"
         >
           <span className="flex items-center justify-between">
             <span>Todas las categorías</span>
@@ -98,6 +119,7 @@ const CategoryFilter = ({
                         ? 'bg-leather-100 text-leather-800 font-medium'
                         : 'text-gray-600 hover:bg-leather-50 hover:text-leather-800'
                     }`}
+                    data-testid={`catalog-subcategory-filter-${category.name.toLowerCase().replace(/\s+/g, '-')}`}
                   >
                     <span className="flex items-center justify-between">
                       <span>{category.name}</span>
@@ -121,12 +143,14 @@ const CategoryFilter = ({
           {hasActiveInventoryFilters && (
             <button
               onClick={() => onInventoryFilterChange({
-                disponible_pieza_unica: false,
-                disponible_encargo_mismo_material: false,
-                disponible_encargo_diferente_material: false,
-                no_disponible: false
+                pieza_unica: false,
+                por_encargue_con_stock: false,
+                por_encargue_sin_stock: false,
+                sin_stock: false,
+                en_stock: false
               })}
               className="text-xs text-leather-600 hover:text-leather-800"
+              data-testid="catalog-inventory-filter-clear"
             >
               Limpiar
             </button>
@@ -136,58 +160,105 @@ const CategoryFilter = ({
            <label className="flex items-center">
              <input 
                type="checkbox" 
-               checked={inventoryFilters.disponible_pieza_unica}
-               onChange={() => handleInventoryFilterChange('disponible_pieza_unica')}
-               className="rounded border-gray-300 text-leather-600 focus:ring-leather-500" 
+               checked={inventoryFilters.pieza_unica}
+               onChange={() => handleInventoryFilterChange('pieza_unica')}
+               className="rounded border-gray-300 text-leather-600 focus:ring-leather-500"
+               data-testid="catalog-inventory-filter-pieza-unica"
              />
              <span className="ml-2 text-sm text-gray-600">Pieza Única</span>
            </label>
            <label className="flex items-center">
              <input 
                type="checkbox" 
-               checked={inventoryFilters.disponible_encargo_mismo_material}
-               onChange={() => handleInventoryFilterChange('disponible_encargo_mismo_material')}
-               className="rounded border-gray-300 text-leather-600 focus:ring-leather-500" 
+               checked={inventoryFilters.por_encargue_con_stock}
+               onChange={() => handleInventoryFilterChange('por_encargue_con_stock')}
+               className="rounded border-gray-300 text-leather-600 focus:ring-leather-500"
+               data-testid="catalog-inventory-filter-encargo-mismo-material"
              />
              <span className="ml-2 text-sm text-gray-600">Encargo Mismo Material</span>
            </label>
           <label className="flex items-center">
             <input 
               type="checkbox" 
-              checked={inventoryFilters.disponible_encargo_diferente_material}
-              onChange={() => handleInventoryFilterChange('disponible_encargo_diferente_material')}
-              className="rounded border-gray-300 text-leather-600 focus:ring-leather-500" 
+              checked={inventoryFilters.por_encargue_sin_stock}
+              onChange={() => handleInventoryFilterChange('por_encargue_sin_stock')}
+              className="rounded border-gray-300 text-leather-600 focus:ring-leather-500"
+              data-testid="catalog-inventory-filter-encargo-diferente-material"
             />
             <span className="ml-2 text-sm text-gray-600">Encargo Diferente Material</span>
           </label>
           <label className="flex items-center">
             <input 
               type="checkbox" 
-              checked={inventoryFilters.no_disponible}
-              onChange={() => handleInventoryFilterChange('no_disponible')}
-              className="rounded border-gray-300 text-leather-600 focus:ring-leather-500" 
+              checked={inventoryFilters.sin_stock}
+              onChange={() => handleInventoryFilterChange('sin_stock')}
+              className="rounded border-gray-300 text-leather-600 focus:ring-leather-500"
+              data-testid="catalog-inventory-filter-no-disponible"
             />
             <span className="ml-2 text-sm text-gray-600">No Disponible</span>
+          </label>
+          <label className="flex items-center">
+            <input 
+              type="checkbox" 
+              checked={inventoryFilters.en_stock}
+              onChange={() => handleInventoryFilterChange('en_stock')}
+              className="rounded border-gray-300 text-leather-600 focus:ring-leather-500"
+              data-testid="catalog-inventory-filter-en-stock"
+            />
+            <span className="ml-2 text-sm text-gray-600">En Stock</span>
           </label>
         </div>
       </div>
       
-      {/* Price Range Filter (Future Enhancement) */}
+      {/* Price Range Filter */}
       <div className="mt-6 pt-6 border-t border-gray-200">
-        <h4 className="text-sm font-medium text-gray-900 mb-3">
-          Rango de Precio
-        </h4>
+        <div className="flex items-center justify-between mb-3">
+          <h4 className="text-sm font-medium text-gray-900">
+            Rango de Precio
+          </h4>
+          {hasActivePriceFilters && (
+            <button
+              onClick={() => onPriceRangeFilterChange({
+                lessThan50k: false,
+                between50k100k: false,
+                moreThan100k: false
+              })}
+              className="text-xs text-leather-600 hover:text-leather-800"
+              data-testid="catalog-price-filter-clear"
+            >
+              Limpiar
+            </button>
+          )}
+        </div>
         <div className="space-y-2">
           <label className="flex items-center">
-            <input type="checkbox" className="rounded border-gray-300 text-leather-600 focus:ring-leather-500" />
+            <input 
+              type="checkbox" 
+              checked={priceRangeFilters.lessThan50k}
+              onChange={() => handlePriceRangeFilterChange('lessThan50k')}
+              className="rounded border-gray-300 text-leather-600 focus:ring-leather-500"
+              data-testid="catalog-price-filter-less-than-50k"
+            />
             <span className="ml-2 text-sm text-gray-600">Menos de $50.000</span>
           </label>
           <label className="flex items-center">
-            <input type="checkbox" className="rounded border-gray-300 text-leather-600 focus:ring-leather-500" />
+            <input 
+              type="checkbox" 
+              checked={priceRangeFilters.between50k100k}
+              onChange={() => handlePriceRangeFilterChange('between50k100k')}
+              className="rounded border-gray-300 text-leather-600 focus:ring-leather-500"
+              data-testid="catalog-price-filter-50k-100k"
+            />
             <span className="ml-2 text-sm text-gray-600">$50.000 - $100.000</span>
           </label>
           <label className="flex items-center">
-            <input type="checkbox" className="rounded border-gray-300 text-leather-600 focus:ring-leather-500" />
+            <input 
+              type="checkbox" 
+              checked={priceRangeFilters.moreThan100k}
+              onChange={() => handlePriceRangeFilterChange('moreThan100k')}
+              className="rounded border-gray-300 text-leather-600 focus:ring-leather-500"
+              data-testid="catalog-price-filter-more-than-100k"
+            />
             <span className="ml-2 text-sm text-gray-600">Más de $100.000</span>
           </label>
         </div>

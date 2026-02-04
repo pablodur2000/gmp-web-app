@@ -137,9 +137,12 @@ const HeroSection = () => {
       {showFirstVisitAnimation && (
         <>
           {/* Logo - shows immediately, then disappears */}
-          <div className={`fixed inset-0 z-50 flex items-center justify-center transition-all duration-500 ${
-            animationStep >= 2 ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
-          }`}>
+          <div 
+            className={`fixed inset-0 z-50 flex items-center justify-center transition-all duration-500 ${
+              animationStep >= 2 ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
+            }`}
+            data-testid="home-hero-first-visit-logo"
+          >
             <div className="text-center">
               <div className="w-32 h-32 bg-leather-600 rounded-full flex items-center justify-center mx-auto mb-6">
                 <span className="text-4xl text-white font-bold">P</span>
@@ -151,15 +154,18 @@ const HeroSection = () => {
             </div>
           </div>
           
-                {/* White curtain that covers entire screen and slides UP smoothly */}
-      <div className={`fixed inset-0 z-40 bg-white transition-transform duration-[500ms] ease-out ${
-        animationStep >= 2 ? 'transform -translate-y-full' : 'transform translate-y-0'
-      }`}></div>
+          {/* White curtain that covers entire screen and slides UP smoothly */}
+          <div 
+            className={`fixed inset-0 z-40 bg-white transition-transform duration-[500ms] ease-out ${
+              animationStep >= 2 ? 'transform -translate-y-full' : 'transform translate-y-0'
+            }`}
+            data-testid="home-hero-first-visit-curtain"
+          ></div>
     </>
   )}
 
   {/* Main Content - always visible but behind white curtain during animation */}
-  <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+  <section className="relative min-h-screen flex items-center justify-center overflow-hidden" data-testid="home-hero-section">
       {/* Background Images */}
       {slides.map((slide, index) => (
         <div
@@ -172,22 +178,35 @@ const HeroSection = () => {
             transform: index === currentSlide && animationStep >= 2 ? 'scale(1.1)' : 'scale(1)',
             transition: 'opacity 1000ms ease-out, transform 3000ms ease-out'
           }}
+          data-testid={`home-hero-slide-${index}`}
         >
           {/* Overlay */}
-          <div className="absolute inset-0 bg-black bg-opacity-40"></div>
+          <div className="absolute inset-0 bg-black bg-opacity-40" data-testid={`home-hero-slide-overlay-${index}`}></div>
         </div>
       ))}
 
       {/* Content */}
-      <div className="relative z-10 text-center text-white max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className="text-4xl md:text-6xl font-serif font-bold mb-6 leading-tight">
+      <div 
+        className="relative z-10 text-center text-white max-w-4xl mx-auto px-4 sm:px-6 lg:px-8"
+        data-testid="home-hero-content"
+      >
+        <h1 
+          className="text-4xl md:text-6xl font-serif font-bold mb-6 leading-tight"
+          data-testid="home-hero-title"
+        >
           {slides[currentSlide].title}
-          <span className="block text-2xl md:text-3xl font-normal mt-2 text-leather-200">
+          <span 
+            className="block text-2xl md:text-3xl font-normal mt-2 text-leather-200"
+            data-testid="home-hero-subtitle"
+          >
             {slides[currentSlide].subtitle}
           </span>
         </h1>
         
-        <p className="text-xl md:text-2xl text-leather-100 mb-8 max-w-2xl mx-auto leading-relaxed">
+        <p 
+          className="text-xl md:text-2xl text-leather-100 mb-8 max-w-2xl mx-auto leading-relaxed"
+          data-testid="home-hero-description"
+        >
           {slides[currentSlide].description}
         </p>
 
@@ -195,9 +214,13 @@ const HeroSection = () => {
           <Link
             to="/catalogo"
             className="group bg-leather-600 hover:bg-leather-700 text-white font-semibold py-4 px-8 rounded-lg transition-all duration-300 transform hover:scale-105 flex items-center space-x-2"
+            data-testid="home-hero-cta-button"
           >
             <span>Explorar Catálogo</span>
-            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" />
+            <ArrowRight 
+              className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300"
+              data-testid="home-hero-cta-arrow-icon"
+            />
           </Link>
         </div>
 

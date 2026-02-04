@@ -18,20 +18,20 @@ const ProductCard = ({ product, viewMode }: ProductCardProps) => {
   }
 
   const statusInfo = getInventoryStatusInfo(product.inventory_status)
-  const isEncargoDiferenteMaterial = product.inventory_status === 'disponible_encargo_diferente_material'
+  const isEncargoDiferenteMaterial = product.inventory_status === 'por_encargue_sin_stock'
 
   if (viewMode === 'list') {
     return (
-      <div className="card p-6">
+      <div className="card p-6" data-testid={`catalog-product-card-${product.id}`}>
         <div className="flex gap-6">
-          {/* Product Image */}
-          <div className="w-32 h-32 flex-shrink-0">
+          {/* Product Image - Clickable */}
+          <Link to={`/producto/${product.id}`} className="w-32 h-32 flex-shrink-0 cursor-pointer">
             <img
               src={product.images[0]}
               alt={product.title}
-              className="w-full h-full object-cover rounded-lg"
+              className="w-full h-full object-cover rounded-lg hover:opacity-90 transition-opacity duration-200"
             />
-          </div>
+          </Link>
 
           {/* Product Info */}
           <div className="flex-1">
@@ -95,9 +95,9 @@ const ProductCard = ({ product, viewMode }: ProductCardProps) => {
 
   // Grid view
   return (
-    <div className="card group overflow-hidden">
-      {/* Product Image */}
-      <div className="relative aspect-square overflow-hidden">
+    <div className="card group overflow-hidden" data-testid={`catalog-product-card-${product.id}`}>
+      {/* Product Image - Clickable */}
+      <Link to={`/producto/${product.id}`} className="block relative aspect-square overflow-hidden cursor-pointer">
         <img
           src={product.images[0]}
           alt={product.title}
@@ -115,7 +115,7 @@ const ProductCard = ({ product, viewMode }: ProductCardProps) => {
         <div className="absolute top-3 right-3 bg-white bg-opacity-95 text-leather-800 font-bold px-3 py-2 rounded-lg shadow-md">
           {formatPrice(product.price)}
         </div>
-      </div>
+      </Link>
 
       {/* Product Info */}
       <div className="p-4">
