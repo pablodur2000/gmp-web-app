@@ -1,19 +1,12 @@
-name: Deploy to GitHub Pages
+# Deploy develop branch to GitHub Pages (develop Supabase).
+# Production is deployed by Vercel from main.
+name: Deploy develop to GitHub Pages
 
 on:
   push:
     branches:
-      - main
+      - develop
   workflow_dispatch:
-    inputs:
-      environment:
-        description: 'Deploy with this environment (Supabase URL + key)'
-        required: true
-        default: 'production'
-        type: choice
-        options:
-          - production
-          - develop
 
 permissions:
   contents: read
@@ -27,8 +20,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    # On push to main use production; on manual run use selected environment
-    environment: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment || 'production' }}
+    environment: develop
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -45,7 +37,6 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          # These come from the environment (production) set above
           VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
 
