@@ -7,7 +7,11 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "create-ticket": "node scripts/create-jira-ticket.js",
+    "update-ticket": "node scripts/update-jira-ticket.js",
+    "update-status": "node scripts/update-ticket-status.js",
+    "analyze-board": "node scripts/analyze-gmp-board.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.38.4",
@@ -31,6 +35,8 @@
     "eslint": "^8.53.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.4",
+    "marklassian": "^1.0.0",
+    "node-fetch": "^3.3.2",
     "postcss": "^8.4.32",
     "supabase": "^2.75.3",
     "tailwindcss": "^3.3.6",
