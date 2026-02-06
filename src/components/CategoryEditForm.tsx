@@ -53,7 +53,7 @@ const CategoryEditForm = ({ category, onClose, onUpdate, logActivity }: Category
     setSubmitting(true)
     
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('categories')
         .update({
           name: formData.name.trim(),
@@ -62,7 +62,6 @@ const CategoryEditForm = ({ category, onClose, onUpdate, logActivity }: Category
           updated_at: new Date().toISOString()
         })
         .eq('id', category.id)
-        .select()
       
       if (error) {
         console.error('Error updating category:', error)
