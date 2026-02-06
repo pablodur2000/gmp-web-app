@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { LogOut, Plus, Package, X, CheckCircle, ShoppingBag, List, DollarSign, EyeOff, Sparkles, Save, Trash2, Bell, Mail } from 'lucide-react'
+import { LogOut, Plus, Package, X, CheckCircle, ShoppingBag, List, DollarSign, EyeOff, Sparkles, Save, Trash2, Bell, Mail, FolderPlus } from 'lucide-react'
 import ProductForm from '../components/ProductForm'
 import ProductEditForm from '../components/ProductEditForm'
 import DeleteConfirmationModal from '../components/DeleteConfirmationModal'
 import SearchBar from '../components/SearchBar'
+import CategoryForm from '../components/CategoryForm'
+import CategoryEditForm from '../components/CategoryEditForm'
 
 const AdminDashboardPage = () => {
   const [user, setUser] = useState<any>(null)
@@ -13,6 +15,7 @@ const AdminDashboardPage = () => {
   const [showProductForm, setShowProductForm] = useState(false)
   const [showProductsCatalog, setShowProductsCatalog] = useState(false)
   const [showSalesView, setShowSalesView] = useState(false)
+  const [showCategoriesView, setShowCategoriesView] = useState(false)
   const [showMessagesModal, setShowMessagesModal] = useState(false)
   const [messages, setMessages] = useState<any[]>([])
   const [loadingMessages, setLoadingMessages] = useState(false)
@@ -42,6 +45,13 @@ const AdminDashboardPage = () => {
     notes: ''
   })
   const [addingSale, setAddingSale] = useState(false)
+  const [categories, setCategories] = useState<any[]>([])
+  const [loadingCategories, setLoadingCategories] = useState(false)
+  const [categorySearchTerm, setCategorySearchTerm] = useState('')
+  const [showCategoryForm, setShowCategoryForm] = useState(false)
+  const [editingCategory, setEditingCategory] = useState<any>(null)
+  const [deletingCategory, setDeletingCategory] = useState<any>(null)
+  const [showDeleteCategoryModal, setShowDeleteCategoryModal] = useState(false)
 
 
 
@@ -71,6 +81,13 @@ const AdminDashboardPage = () => {
       loadSales()
     }
   }, [showSalesView])
+
+  // Load categories when categories view is shown
+  useEffect(() => {
+    if (showCategoriesView) {
+      loadCategories()
+    }
+  }, [showCategoriesView])
 
   // Load messages when messages modal is shown
   useEffect(() => {
@@ -732,6 +749,174 @@ const AdminDashboardPage = () => {
     }
   }
 
+  // Category Management Functions
+  const loadCategories = async () => {
+    setLoadingCategories(true)
+    try {
+      const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .order('main_category', { ascending: true })
+        .order('name', { ascending: true })
+      
+      if (error) {
+        console.error('Error loading categories:', error)
+        return
+      }
+      
+      // Calculate product_count for each category
+      const categoriesWithCount = await Promise.all(
+        (data || []).map(async (category) => {
+          const { count, error: countError } = await supabase
+            .from('products')
+            .select('*', { count: 'exact', head: true })
+            .eq('category_id', category.id)
+          
+          if (countError) {
+            console.error('Error counting products for category:', countError)
+            return {
+              ...category,
+              product_count: 0
+            }
+          }
+          
+          return {
+            ...category,
+            product_count: count || 0
+          }
+        })
+      )
+      
+      setCategories(categoriesWithCount)
+    } catch (error) {
+      console.error('Error loading categories:', error)
+    } finally {
+      setLoadingCategories(false)
+    }
+  }
+
+  const searchCategories = async () => {
+    if (!categorySearchTerm.trim()) {
+      loadCategories() // Load all categories if search is empty
+      return
+    }
+    
+    setLoadingCategories(true)
+    try {
+      const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .ilike('name', `%${categorySearchTerm}%`)
+        .order('main_category', { ascending: true })
+        .order('name', { ascending: true })
+      
+      if (error) {
+        console.error('Error searching categories:', error)
+        return
+      }
+      
+      // Calculate product_count for each category
+      const categoriesWithCount = await Promise.all(
+        (data || []).map(async (category) => {
+          const { count, error: countError } = await supabase
+            .from('products')
+            .select('*', { count: 'exact', head: true })
+            .eq('category_id', category.id)
+          
+          if (countError) {
+            console.error('Error counting products for category:', countError)
+            return {
+              ...category,
+              product_count: 0
+            }
+          }
+          
+          return {
+            ...category,
+            product_count: count || 0
+          }
+        })
+      )
+      
+      setCategories(categoriesWithCount)
+    } catch (error) {
+      console.error('Error searching categories:', error)
+    } finally {
+      setLoadingCategories(false)
+    }
+  }
+
+  const handleEditCategory = (category: any) => {
+    setEditingCategory(category)
+  }
+
+  const handleDeleteCategory = async (category: any) => {
+    // Check if category has products
+    try {
+      const { count, error } = await supabase
+        .from('products')
+        .select('*', { count: 'exact', head: true })
+        .eq('category_id', category.id)
+      
+      if (error) {
+        console.error('Error checking products:', error)
+        alert('Error al verificar productos: ' + error.message)
+        return
+      }
+      
+      if (count && count > 0) {
+        alert(`No se puede eliminar esta categoría porque tiene ${count} producto(s) asignado(s). Por favor, reasigna los productos primero.`)
+        return
+      }
+      
+      // If no products, proceed with deletion
+      setDeletingCategory(category)
+      setShowDeleteCategoryModal(true)
+    } catch (error: any) {
+      console.error('Error in handleDeleteCategory:', error)
+      alert('Error al verificar productos: ' + error.message)
+    }
+  }
+
+  const confirmDeleteCategory = async () => {
+    if (!deletingCategory) return
+    
+    try {
+      const { error } = await supabase
+        .from('categories')
+        .delete()
+        .eq('id', deletingCategory.id)
+      
+      if (error) {
+        console.error('Error deleting category:', error)
+        alert('Error eliminando categoría: ' + error.message)
+        return
+      }
+      
+      // Log activity
+      await logActivity({
+        action_type: 'DELETE',
+        resource_type: 'CATEGORY',
+        resource_id: deletingCategory.id,
+        resource_name: deletingCategory.name,
+        details: {
+          main_category: deletingCategory.main_category,
+          description: deletingCategory.description
+        }
+      })
+      
+      // Refresh categories list
+      loadCategories()
+      
+      // Close modal
+      setShowDeleteCategoryModal(false)
+      setDeletingCategory(null)
+    } catch (error: any) {
+      console.error('Error in confirmDeleteCategory:', error)
+      alert('Error eliminando categoría: ' + error.message)
+    }
+  }
+
   const logActivity = async (logData: {
     action_type: string
     resource_type: string
@@ -958,7 +1143,10 @@ const AdminDashboardPage = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* Add Product Card */}
               <button 
-                onClick={() => setShowProductForm(true)}
+                onClick={() => {
+                  setShowProductForm(true)
+                  setShowCategoriesView(false) // Close categories view when opening product form
+                }}
                 className="group relative overflow-hidden bg-gradient-to-br from-leather-50 to-leather-100 border-2 border-leather-200 rounded-xl p-6 hover:border-leather-400 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
               >
                 <div className="flex flex-col items-center text-center space-y-3">
@@ -981,6 +1169,7 @@ const AdminDashboardPage = () => {
                   setShowProductsCatalog(!showProductsCatalog)
                   if (!showProductsCatalog) {
                     setShowSalesView(false) // Deselect sales when selecting products
+                    setShowCategoriesView(false) // Deselect categories when selecting products
                   }
                 }}
                 className={`group relative overflow-hidden rounded-xl p-6 border-2 transition-all duration-300 transform hover:-translate-y-1 ${
@@ -1021,6 +1210,7 @@ const AdminDashboardPage = () => {
                   setShowSalesView(!showSalesView)
                   if (!showSalesView) {
                     setShowProductsCatalog(false) // Deselect products when selecting sales
+                    setShowCategoriesView(false) // Deselect categories when selecting sales
                   }
                 }}
                 className={`group relative overflow-hidden rounded-xl p-6 border-2 transition-all duration-300 transform hover:-translate-y-1 ${
@@ -1054,6 +1244,47 @@ const AdminDashboardPage = () => {
                   </div>
                 )}
               </button>
+
+              {/* Manage Categories Card */}
+              <button 
+                onClick={() => {
+                  setShowCategoriesView(!showCategoriesView)
+                  if (!showCategoriesView) {
+                    setShowProductsCatalog(false) // Deselect products when selecting categories
+                    setShowSalesView(false) // Deselect sales when selecting categories
+                  }
+                }}
+                className={`group relative overflow-hidden rounded-xl p-6 border-2 transition-all duration-300 transform hover:-translate-y-1 ${
+                  showCategoriesView 
+                    ? 'bg-gradient-to-br from-purple-50 to-purple-100 border-purple-300 shadow-lg' 
+                    : 'bg-gradient-to-br from-gray-50 to-white border-gray-200 hover:border-purple-300 hover:shadow-lg'
+                }`}
+              >
+                <div className="flex flex-col items-center text-center space-y-3">
+                  <div className={`p-4 rounded-full transition-transform duration-300 group-hover:scale-110 ${
+                    showCategoriesView ? 'bg-purple-600' : 'bg-gray-400'
+                  }`}>
+                    {showCategoriesView ? (
+                      <EyeOff className="w-6 h-6 text-white" />
+                    ) : (
+                      <FolderPlus className="w-6 h-6 text-white" />
+                    )}
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 text-lg">
+                      {showCategoriesView ? 'Ocultar Categorías' : 'Gestionar Categorías'}
+                    </h3>
+                    <p className="text-sm text-gray-600 mt-1">
+                      {showCategoriesView ? 'Cerrar categorías' : 'Ver y editar categorías'}
+                    </p>
+                  </div>
+                </div>
+                {showCategoriesView && (
+                  <div className="absolute top-2 right-2">
+                    <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
+                  </div>
+                )}
+              </button>
             </div>
           </div>
         </div>
@@ -1063,7 +1294,8 @@ const AdminDashboardPage = () => {
           <div className="px-6 py-4 border-b border-gray-200">
             <h2 className="text-lg font-medium text-gray-900">
               {showProductsCatalog ? 'Catálogo de Productos' : 
-               showSalesView ? 'Ventas' : 'Actividad Reciente'}
+               showSalesView ? 'Ventas' : 
+               showCategoriesView ? 'Categorías' : 'Actividad Reciente'}
             </h2>
           </div>
           <div className="p-6">
@@ -1405,6 +1637,104 @@ const AdminDashboardPage = () => {
                   </div>
                 )}
               </div>
+            ) : showCategoriesView ? (
+              // Categories View
+              <div className="space-y-6">
+                {/* Add Category Section */}
+                <div className="bg-gradient-to-br from-purple-50 to-white border-2 border-purple-200 rounded-xl p-6 shadow-sm">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center space-x-2">
+                      <Plus className="w-5 h-5 text-purple-600" />
+                      <h3 className="text-lg font-semibold text-gray-900">Agregar Categoría</h3>
+                    </div>
+                    <button
+                      onClick={() => setShowCategoryForm(true)}
+                      className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors duration-200 flex items-center space-x-2"
+                    >
+                      <Plus className="w-4 h-4" />
+                      <span>Nueva Categoría</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Search Bar for Categories */}
+                <div className="mb-6">
+                  <SearchBar
+                    value={categorySearchTerm}
+                    onChange={setCategorySearchTerm}
+                    onSearch={searchCategories}
+                    placeholder="Buscar categorías por nombre... (Presiona Enter)"
+                  />
+                </div>
+                
+                {loadingCategories ? (
+                  <div className="flex justify-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+                  </div>
+                ) : categories.length === 0 ? (
+                  <p className="text-gray-500 text-center py-8">
+                    {categorySearchTerm ? `No se encontraron categorías que coincidan con "${categorySearchTerm}"` : 'No se encontraron categorías. ¡Crea tu primera categoría!'}
+                  </p>
+                ) : (
+                  <div className="space-y-8">
+                    {/* Group by main_category */}
+                    {['cuero', 'macrame'].map((mainCategory) => {
+                      const categoryGroup = categories.filter(cat => cat.main_category === mainCategory)
+                      if (categoryGroup.length === 0) return null
+                      
+                      return (
+                        <div key={mainCategory}>
+                          <h3 className="text-xl font-semibold text-gray-900 mb-4">
+                            {mainCategory === 'cuero' ? 'Artesanías en Cuero' : 'Macramé Artesanal'}
+                          </h3>
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {categoryGroup.map((category) => (
+                              <div key={category.id} className="bg-gray-50 rounded-lg p-4 border border-gray-200 hover:border-purple-300 transition-colors">
+                                <div className="flex justify-between items-start mb-3">
+                                  <h4 className="font-semibold text-gray-900 text-base">
+                                    {category.name}
+                                  </h4>
+                                  <div className="flex space-x-2">
+                                    <button 
+                                      onClick={() => handleEditCategory(category)}
+                                      className="text-purple-600 hover:text-purple-800 text-xs hover:bg-purple-50 px-2 py-1 rounded transition-colors"
+                                    >
+                                      Editar
+                                    </button>
+                                    <button 
+                                      onClick={() => handleDeleteCategory(category)}
+                                      className="text-red-600 hover:text-red-800 text-xs hover:bg-red-50 px-2 py-1 rounded transition-colors"
+                                    >
+                                      Eliminar
+                                    </button>
+                                  </div>
+                                </div>
+                                
+                                <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                                  {category.description}
+                                </p>
+                                
+                                <div className="flex items-center justify-between">
+                                  <span className={`px-2 py-1 rounded text-xs font-medium ${
+                                    category.main_category === 'cuero' 
+                                      ? 'bg-amber-100 text-amber-800' 
+                                      : 'bg-stone-100 text-stone-800'
+                                  }`}>
+                                    {category.main_category === 'cuero' ? 'Cuero' : 'Macramé'}
+                                  </span>
+                                  <span className="text-xs text-gray-500">
+                                    {category.product_count || 0} producto(s)
+                                  </span>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
             ) : (
               // Recent Activity View
               <div>
@@ -1590,6 +1920,79 @@ const AdminDashboardPage = () => {
         title="Eliminar Producto"
         message="¿Estás seguro de que quieres eliminar este producto? Esta acción eliminará permanentemente el producto y todas sus imágenes."
         itemName={deletingProduct?.title || ''}
+        isLoading={false}
+      />
+
+      {/* Category Create Modal */}
+      {showCategoryForm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-lg font-medium">Crear Nueva Categoría</h3>
+                <button
+                  onClick={() => {
+                    setShowCategoryForm(false)
+                  }}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+              <CategoryForm
+                onSuccess={() => {
+                  setShowCategoryForm(false)
+                  loadCategories()
+                }}
+                logActivity={logActivity}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Category Edit Modal */}
+      {editingCategory && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-lg font-medium">Editar Categoría: {editingCategory.name}</h3>
+                <button
+                  onClick={() => {
+                    setEditingCategory(null)
+                  }}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+              <CategoryEditForm
+                category={editingCategory}
+                onClose={() => {
+                  setEditingCategory(null)
+                }}
+                onUpdate={() => {
+                  loadCategories()
+                }}
+                logActivity={logActivity}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Category Delete Modal */}
+      <DeleteConfirmationModal
+        isOpen={showDeleteCategoryModal}
+        onClose={() => {
+          setShowDeleteCategoryModal(false)
+          setDeletingCategory(null)
+        }}
+        onConfirm={confirmDeleteCategory}
+        title="Eliminar Categoría"
+        message="¿Estás seguro de que quieres eliminar esta categoría? Esta acción eliminará permanentemente la categoría."
+        itemName={deletingCategory?.name || ''}
         isLoading={false}
       />
 

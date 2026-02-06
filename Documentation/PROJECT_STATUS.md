@@ -1,6 +1,6 @@
 # Project Status - GMP Web Application
 
-**Last Updated:** 2025-12-01 (Updated after Phase 4 completion - ALL EPICS CREATED!)
+**Last Updated:** 2026-02-06 (Updated after Category Management implementation - Story GMP-40 created)
 
 ---
 
@@ -32,6 +32,7 @@
 | **GMP-23** | Story | As an admin, I want to view and manage activity logs so that I can track all system changes and user actions | To Do | 2025-12-01 | GMP-17 | [View](https://pablo-durandev.atlassian.net/browse/GMP-23) |
 | **GMP-24** | Story | As an admin, I want to search and filter data across different views so that I can quickly find specific information | To Do | 2025-12-01 | GMP-17 | [View](https://pablo-durandev.atlassian.net/browse/GMP-24) |
 | **GMP-25** | Story | As an admin, I want to see loading states and success notifications so that I understand when operations are in progress and when they complete | To Do | 2025-12-01 | GMP-17 | [View](https://pablo-durandev.atlassian.net/browse/GMP-25) |
+| **GMP-40** | Story | As an admin, I want to manage categories (create, edit, delete) so that I can organize products by category and main category (Cuero/Macramé) | To Do | 2026-02-06 | GMP-17 | [View](https://pablo-durandev.atlassian.net/browse/GMP-40) |
 | **GMP-26** | Epic | CatalogPage - Product Catalog Epic | To Do | 2025-12-01 | - | [View](https://pablo-durandev.atlassian.net/browse/GMP-26) |
 | **GMP-27** | Story | As a visitor, I want to see a list of products in the catalog so that I can browse available items | To Do | 2025-12-01 | GMP-26 | [View](https://pablo-durandev.atlassian.net/browse/GMP-27) |
 | **GMP-28** | Story | As a visitor, I want to filter products by main category (Cuero or Macramé) so that I can focus on specific types of crafts | To Do | 2025-12-01 | GMP-26 | [View](https://pablo-durandev.atlassian.net/browse/GMP-28) |
@@ -50,7 +51,7 @@
 ### Ticket Statistics
 
 - **Total Epics:** 5
-- **Total Stories:** 30
+- **Total Stories:** 31
 - **Total Tasks:** 0
 - **Total Bugs:** 0
 - **Total Subtasks:** 0
@@ -66,7 +67,7 @@
 |------|-----------|---------------|-----------------|--------|-------|
 | **HomePage** | `src/pages/HomePage.tsx` | ✅ GMP-4 | ✅ 5 Stories (GMP-5 to GMP-9) | ✅ Complete | All stories identified and created |
 | **AdminLoginPage** | `src/pages/AdminLoginPage.tsx` | ✅ GMP-10 | ✅ 6 Stories (GMP-11 to GMP-16) | ✅ Complete | All stories identified and created |
-| **AdminDashboardPage** | `src/pages/AdminDashboardPage.tsx` | ✅ GMP-17 | ✅ 8 Stories (GMP-18 to GMP-25) | ✅ Complete | All stories identified and created |
+| **AdminDashboardPage** | `src/pages/AdminDashboardPage.tsx` | ✅ GMP-17 | ✅ 9 Stories (GMP-18 to GMP-25, GMP-40) | ✅ Complete | All stories identified and created (Category Management added) |
 | **CatalogPage** | `src/pages/CatalogPage.tsx` | ✅ GMP-26 | ✅ 6 Stories (GMP-27 to GMP-33) | ✅ Complete | All stories identified and created |
 | **ProductDetailPage** | `src/pages/ProductDetailPage.tsx` | ✅ GMP-34 | ✅ 5 Stories (GMP-35 to GMP-39) | ⏳ Implementation Needed | Epic created - Stories focus on replacing mock data with Supabase integration |
 
@@ -164,7 +165,7 @@
    - Statistics and metrics display
    - Modal management (forms, delete confirmations)
 
-**Deliverable:** ✅ 1 Epic + 8 Stories created and linked to Epic GMP-17
+**Deliverable:** ✅ 1 Epic + 9 Stories created and linked to Epic GMP-17
 - GMP-18: User Authentication & Admin Verification
 - GMP-19: Dashboard Statistics & Quick Actions
 - GMP-20: Product Management (Create, Edit, Delete)
@@ -173,6 +174,7 @@
 - GMP-23: Activity Logs View & Management
 - GMP-24: Search & Filter Functionality
 - GMP-25: Loading States & Success Notifications
+- GMP-40: Category Management (Create, Edit, Delete) - **NEW**
 
 ---
 
@@ -423,6 +425,7 @@ ProductDetailPage:    ░░░░░░░░░░   0% ⏳
 - **Phase 2 Completed:** Created Epic GMP-17 and 8 stories for AdminDashboardPage Epic (GMP-18 to GMP-25)
 - **Phase 3 Completed:** Created Epic GMP-26 and 6 stories for CatalogPage Epic (GMP-27 to GMP-33)
 - **Phase 4 Completed:** Created Epic GMP-34 and 5 stories for ProductDetailPage Epic (GMP-35 to GMP-39) - Focus on implementation (replacing mock data)
+- **2026-02-06:** Created Story GMP-40 (Category Management) in AdminDashboardPage Epic (GMP-17) - Category CRUD operations implemented and ticket created in Jira
 
 ---
 
