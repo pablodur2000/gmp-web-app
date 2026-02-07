@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { LogOut, Plus, Package, X, CheckCircle, ShoppingBag, List, DollarSign, EyeOff, Sparkles, Save, Trash2, Bell, Mail, FolderPlus } from 'lucide-react'
+import { LogOut, Plus, Package, X, CheckCircle, ShoppingBag, List, DollarSign, EyeOff, Sparkles, Save, Trash2, Bell, Mail, FolderPlus, ChevronDown, ChevronUp } from 'lucide-react'
 import ProductForm from '../components/ProductForm'
 import ProductEditForm from '../components/ProductEditForm'
 import DeleteConfirmationModal from '../components/DeleteConfirmationModal'
 import SearchBar from '../components/SearchBar'
 import CategoryForm from '../components/CategoryForm'
 import CategoryEditForm from '../components/CategoryEditForm'
+import SaleEditForm from '../components/SaleEditForm'
 
 const AdminDashboardPage = () => {
   const [user, setUser] = useState<any>(null)
@@ -25,6 +26,14 @@ const AdminDashboardPage = () => {
   const [recentActivity, setRecentActivity] = useState<any[]>([])
   const [products, setProducts] = useState<any[]>([])
   const [loadingProducts, setLoadingProducts] = useState(false)
+  const [stats, setStats] = useState({
+    totalProducts: 0,
+    totalSales: 0,
+    totalRevenue: 0,
+    pendingSales: 0,
+    completedSales: 0,
+    recentSalesCount: 0
+  })
   const [sales, setSales] = useState<any[]>([])
   const [loadingSales, setLoadingSales] = useState(false)
   const [showDeleteSuccess, setShowDeleteSuccess] = useState(false)
@@ -37,12 +46,15 @@ const AdminDashboardPage = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [deletingSale, setDeletingSale] = useState<any>(null)
   const [showDeleteSaleModal, setShowDeleteSaleModal] = useState(false)
+  const [editingSale, setEditingSale] = useState<any>(null)
   const [quickSaleForm, setQuickSaleForm] = useState({
-    productId: '',
-    quantity: 1,
     customerName: '',
     customerPhone: '',
-    notes: ''
+    customerEmail: '',
+    notes: '',
+    items: [
+      { productId: '', quantity: 1 }
+    ]
   })
   const [addingSale, setAddingSale] = useState(false)
   const [categories, setCategories] = useState<any[]>([])
@@ -52,8 +64,7 @@ const AdminDashboardPage = () => {
   const [editingCategory, setEditingCategory] = useState<any>(null)
   const [deletingCategory, setDeletingCategory] = useState<any>(null)
   const [showDeleteCategoryModal, setShowDeleteCategoryModal] = useState(false)
-
-
+  const [expandedSales, setExpandedSales] = useState<Set<string>>(new Set())
 
   const navigate = useNavigate()
 
@@ -191,10 +202,55 @@ const AdminDashboardPage = () => {
       }
       
       setProducts(data || [])
+      // Update stats after loading products
+      loadDashboardStats()
     } catch (error) {
       console.error('Error loading products:', error)
     } finally {
       setLoadingProducts(false)
+    }
+  }
+
+  const loadDashboardStats = async () => {
+    try {
+      // Get product count
+      const { count: productCount } = await supabase
+        .from('products')
+        .select('*', { count: 'exact', head: true })
+      
+      // Get sales stats
+      const { data: salesData, error: salesError } = await supabase
+        .from('sales')
+        .select('status, total_amount, created_at')
+      
+      if (salesError) {
+        console.error('Error loading sales stats:', salesError)
+        return
+      }
+      
+      // Calculate stats from salesData
+      const totalSales = salesData?.length || 0
+      const totalRevenue = salesData?.reduce((sum, s) => sum + (s.total_amount || 0), 0) || 0
+      const pendingSales = salesData?.filter(s => s.status === 'pendiente').length || 0
+      const completedSales = salesData?.filter(s => s.status === 'completado').length || 0
+      
+      // Recent sales (last 7 days)
+      const sevenDaysAgo = new Date()
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
+      const recentSales = salesData?.filter(s => 
+        new Date(s.created_at) >= sevenDaysAgo
+      ).length || 0
+      
+      setStats({
+        totalProducts: productCount || 0,
+        totalSales,
+        totalRevenue,
+        pendingSales,
+        completedSales,
+        recentSalesCount: recentSales
+      })
+    } catch (error) {
+      console.error('Error loading dashboard stats:', error)
     }
   }
 
@@ -203,7 +259,21 @@ const AdminDashboardPage = () => {
     try {
       const { data, error } = await supabase
         .from('sales')
-        .select('*')
+        .select(`
+          *,
+          sales_items (
+            id,
+            quantity,
+            unit_price,
+            subtotal,
+            products (
+              id,
+              title,
+              price,
+              images
+            )
+          )
+        `)
         .order('created_at', { ascending: false })
         .order('id', { ascending: false })
       
@@ -456,31 +526,57 @@ const AdminDashboardPage = () => {
   }
 
   const createQuickSale = async () => {
-    if (!quickSaleForm.productId || !quickSaleForm.customerName) {
-      alert('Por favor completa el producto y el nombre del cliente')
+    if (!quickSaleForm.customerName) {
+      alert('Por favor completa el nombre del cliente')
+      return
+    }
+
+    if (quickSaleForm.items.length === 0 || quickSaleForm.items.every(item => !item.productId)) {
+      alert('Por favor agrega al menos un producto')
       return
     }
 
     setAddingSale(true)
     try {
-      // Get product details
-      const selectedProduct = products.find(p => p.id === quickSaleForm.productId)
-      if (!selectedProduct) {
-        alert('Producto no encontrado')
-        return
+      // Calculate total from all items
+      let totalAmount = 0
+      const itemsToCreate: any[] = []
+
+      for (const item of quickSaleForm.items) {
+        if (!item.productId) continue
+
+        const selectedProduct = products.find(p => p.id === item.productId)
+        if (!selectedProduct) {
+          alert(`Producto no encontrado: ${item.productId}`)
+          continue
+        }
+
+        const subtotal = selectedProduct.price * item.quantity
+        totalAmount += subtotal
+
+        itemsToCreate.push({
+          product_id: selectedProduct.id,
+          quantity: item.quantity,
+          unit_price: selectedProduct.price,
+          subtotal: subtotal
+        })
       }
 
-      const subtotal = selectedProduct.price * quickSaleForm.quantity
+      if (itemsToCreate.length === 0) {
+        alert('No hay productos válidos para crear la venta')
+        return
+      }
 
       // Create sale
       const { data: saleData, error: saleError } = await supabase
         .from('sales')
         .insert([{
           customer_name: quickSaleForm.customerName,
+          customer_email: quickSaleForm.customerEmail || null,
           customer_phone: quickSaleForm.customerPhone || null,
-          total_amount: subtotal,
+          total_amount: totalAmount,
           status: 'pendiente',
-          notes: quickSaleForm.notes,
+          notes: quickSaleForm.notes || null,
           sold: false
         }])
         .select()
@@ -492,21 +588,20 @@ const AdminDashboardPage = () => {
         return
       }
 
-      // Create sales_item entry (links product to sale)
+      // Create sales_items entries
+      const salesItemsToInsert = itemsToCreate.map(item => ({
+        sale_id: saleData.id,
+        ...item
+      }))
+
       const { error: itemError } = await supabase
         .from('sales_items')
-        .insert([{
-          sale_id: saleData.id,
-          product_id: selectedProduct.id,
-          quantity: quickSaleForm.quantity,
-          unit_price: selectedProduct.price,
-          subtotal: subtotal
-        }])
+        .insert(salesItemsToInsert)
 
       if (itemError) {
-        console.error('Error creating sale item:', itemError)
+        console.error('Error creating sale items:', itemError)
         // Don't fail the whole operation, but log it
-        console.warn('Sale created but sales_item failed. Sale ID:', saleData.id)
+        console.warn('Sale created but sales_items failed. Sale ID:', saleData.id)
       }
 
       // Log activity
@@ -516,24 +611,28 @@ const AdminDashboardPage = () => {
         resource_id: saleData.id,
         resource_name: quickSaleForm.customerName,
         details: {
-          product: selectedProduct.title,
-          quantity: quickSaleForm.quantity,
-          total_amount: subtotal,
-          notes: quickSaleForm.notes
+          items_count: itemsToCreate.length,
+          total_amount: totalAmount,
+          notes: quickSaleForm.notes,
+          customer_email: quickSaleForm.customerEmail,
+          customer_phone: quickSaleForm.customerPhone
         }
       })
 
       // Reset form
       setQuickSaleForm({
-        productId: '',
-        quantity: 1,
         customerName: '',
         customerPhone: '',
-        notes: ''
+        customerEmail: '',
+        notes: '',
+        items: [
+          { productId: '', quantity: 1 }
+        ]
       })
 
       // Refresh sales
       loadSales()
+      loadDashboardStats()
 
       // Show success
       setShowDeleteSuccess(true)
@@ -1083,7 +1182,7 @@ const AdminDashboardPage = () => {
                 <div className="relative">
                   <Bell className="w-5 h-5" />
                   {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center min-w-[20px]">
+                    <span className="absolute top-0 right-0 bg-red-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center min-w-[16px] transform translate-x-1/2 -translate-y-1/2 shadow-sm">
                       {unreadCount > 9 ? '9+' : unreadCount}
                     </span>
                   )}
@@ -1116,15 +1215,81 @@ const AdminDashboardPage = () => {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Stats Cards */}
-        <div className="flex justify-center mb-8">
-          <div className="bg-white rounded-lg shadow p-6 w-full max-w-sm">
-            <div className="flex items-center justify-center">
-              <div className="p-3 bg-blue-100 rounded-full">
-                <Package className="w-6 h-6 text-blue-600" />
-              </div>
-              <div className="ml-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          {/* Total Products */}
+          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-blue-500">
+            <div className="flex items-center justify-between">
+              <div>
                 <p className="text-sm font-medium text-gray-600">Total de Productos</p>
-                <p className="text-2xl font-bold text-gray-900">{products.length}</p>
+                <p className="text-3xl font-bold text-gray-900 mt-2">{stats.totalProducts}</p>
+              </div>
+              <div className="p-3 bg-blue-100 rounded-full">
+                <Package className="w-8 h-8 text-blue-600" />
+              </div>
+            </div>
+          </div>
+
+          {/* Total Sales */}
+          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-purple-500">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Total de Ventas</p>
+                <p className="text-3xl font-bold text-gray-900 mt-2">{stats.totalSales}</p>
+              </div>
+              <div className="p-3 bg-purple-100 rounded-full">
+                <ShoppingBag className="w-8 h-8 text-purple-600" />
+              </div>
+            </div>
+          </div>
+
+          {/* Total Revenue */}
+          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Ingresos Totales</p>
+                <p className="text-3xl font-bold text-green-600 mt-2">${stats.totalRevenue.toLocaleString()}</p>
+              </div>
+              <div className="p-3 bg-green-100 rounded-full">
+                <DollarSign className="w-8 h-8 text-green-600" />
+              </div>
+            </div>
+          </div>
+
+          {/* Pending Sales */}
+          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-yellow-500">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Ventas Pendientes</p>
+                <p className="text-3xl font-bold text-gray-900 mt-2">{stats.pendingSales}</p>
+              </div>
+              <div className="p-3 bg-yellow-100 rounded-full">
+                <Clock className="w-8 h-8 text-yellow-600" />
+              </div>
+            </div>
+          </div>
+
+          {/* Completed Sales */}
+          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-green-500">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Ventas Completadas</p>
+                <p className="text-3xl font-bold text-gray-900 mt-2">{stats.completedSales}</p>
+              </div>
+              <div className="p-3 bg-green-100 rounded-full">
+                <CheckCircle className="w-8 h-8 text-green-600" />
+              </div>
+            </div>
+          </div>
+
+          {/* Recent Sales (Last 7 Days) */}
+          <div className="bg-white rounded-lg shadow p-6 border-l-4 border-indigo-500">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600">Ventas Recientes (7 días)</p>
+                <p className="text-3xl font-bold text-gray-900 mt-2">{stats.recentSalesCount}</p>
+              </div>
+              <div className="p-3 bg-indigo-100 rounded-full">
+                <TrendingUp className="w-8 h-8 text-indigo-600" />
               </div>
             </div>
           </div>
@@ -1302,14 +1467,24 @@ const AdminDashboardPage = () => {
             {showProductsCatalog ? (
               // Products Catalog View
               <div>
-                {/* Search Bar for Products */}
-                <div className="mb-6">
-                  <SearchBar
-                    value={productSearchTerm}
-                    onChange={setProductSearchTerm}
-                    onSearch={searchProducts}
-                    placeholder="Buscar productos por nombre... (Presiona Enter)"
-                  />
+                {/* Search Bar and Export for Products */}
+                <div className="mb-6 flex items-center justify-between gap-4">
+                  <div className="flex-1">
+                    <SearchBar
+                      value={productSearchTerm}
+                      onChange={setProductSearchTerm}
+                      onSearch={searchProducts}
+                      placeholder="Buscar productos por nombre... (Presiona Enter)"
+                    />
+                  </div>
+                  <button
+                    onClick={exportProducts}
+                    className="flex items-center space-x-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm font-medium whitespace-nowrap"
+                    title="Exportar productos a CSV"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span>Exportar</span>
+                  </button>
                 </div>
                 
                 {loadingProducts ? (
@@ -1390,43 +1565,8 @@ const AdminDashboardPage = () => {
                     </div>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-                    {/* Product Selection */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Producto *
-                      </label>
-                      <select
-                        value={quickSaleForm.productId}
-                        onChange={(e) => setQuickSaleForm({...quickSaleForm, productId: e.target.value})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                        required
-                      >
-                        <option value="">Seleccionar producto</option>
-                        {products.filter(p => p.available).map(product => (
-                          <option key={product.id} value={product.id}>
-                            {product.title} - ${product.price}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* Quantity */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Cantidad *
-                      </label>
-                      <input
-                        type="number"
-                        min="1"
-                        value={quickSaleForm.quantity}
-                        onChange={(e) => setQuickSaleForm({...quickSaleForm, quantity: parseInt(e.target.value) || 1})}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                        required
-                      />
-                    </div>
-
-                    {/* Customer Name */}
+                  {/* Customer Information */}
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Cliente *
@@ -1441,7 +1581,19 @@ const AdminDashboardPage = () => {
                       />
                     </div>
 
-                    {/* Customer Phone */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Email
+                      </label>
+                      <input
+                        type="email"
+                        value={quickSaleForm.customerEmail}
+                        onChange={(e) => setQuickSaleForm({...quickSaleForm, customerEmail: e.target.value})}
+                        placeholder="cliente@email.com"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                      />
+                    </div>
+
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Teléfono
@@ -1455,7 +1607,6 @@ const AdminDashboardPage = () => {
                       />
                     </div>
 
-                    {/* Notes */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Notas
@@ -1470,21 +1621,113 @@ const AdminDashboardPage = () => {
                     </div>
                   </div>
 
+                  {/* Products List */}
+                  <div className="mb-4">
+                    <h4 className="text-sm font-semibold text-gray-900 mb-3">Productos</h4>
+                    <div className="space-y-2">
+                      {quickSaleForm.items.map((item, index) => {
+                        const selectedProduct = products.find(p => p.id === item.productId)
+                        const subtotal = selectedProduct ? selectedProduct.price * item.quantity : 0
+                        
+                        return (
+                          <div key={index} className="bg-white rounded-lg border border-gray-200 p-3">
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
+                              <div>
+                                <label className="block text-xs font-medium text-gray-700 mb-1">
+                                  Producto *
+                                </label>
+                                <select
+                                  value={item.productId}
+                                  onChange={(e) => {
+                                    const newItems = [...quickSaleForm.items]
+                                    newItems[index].productId = e.target.value
+                                    newItems[index].quantity = 1
+                                    setQuickSaleForm({...quickSaleForm, items: newItems})
+                                  }}
+                                  className="w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                                  required
+                                >
+                                  <option value="">Seleccionar producto</option>
+                                  {products.filter(p => p.available).map(product => (
+                                    <option key={product.id} value={product.id}>
+                                      {product.title} - ${product.price}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium text-gray-700 mb-1">
+                                  Cantidad *
+                                </label>
+                                <input
+                                  type="number"
+                                  min="1"
+                                  value={item.quantity}
+                                  onChange={(e) => {
+                                    const newItems = [...quickSaleForm.items]
+                                    newItems[index].quantity = parseInt(e.target.value) || 1
+                                    setQuickSaleForm({...quickSaleForm, items: newItems})
+                                  }}
+                                  className="w-full px-2 py-1.5 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                                  required
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-xs font-medium text-gray-700 mb-1">
+                                  Subtotal
+                                </label>
+                                <p className="text-sm font-bold text-green-600">${subtotal}</p>
+                              </div>
+                              <div className="flex items-end">
+                                {quickSaleForm.items.length > 1 && (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const newItems = quickSaleForm.items.filter((_, i) => i !== index)
+                                      setQuickSaleForm({...quickSaleForm, items: newItems})
+                                    }}
+                                    className="w-full px-3 py-1.5 text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition-colors text-sm font-medium"
+                                  >
+                                    <Trash2 className="w-4 h-4 inline" />
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setQuickSaleForm({
+                          ...quickSaleForm,
+                          items: [...quickSaleForm.items, { productId: '', quantity: 1 }]
+                        })
+                      }}
+                      className="mt-2 flex items-center space-x-2 px-4 py-2 text-green-600 hover:text-green-800 hover:bg-green-50 rounded-lg transition-colors text-sm font-medium"
+                    >
+                      <Plus className="w-4 h-4" />
+                      <span>Agregar Producto</span>
+                    </button>
+                  </div>
+
                   {/* Total Preview and Add Button */}
                   <div className="mt-4 flex items-center justify-between pt-4 border-t border-green-200">
                     <div className="flex items-center space-x-4">
-                      {quickSaleForm.productId && (
-                        <div className="text-sm">
-                          <span className="text-gray-600">Total: </span>
-                          <span className="font-bold text-green-600 text-lg">
-                            ${(products.find(p => p.id === quickSaleForm.productId)?.price || 0) * quickSaleForm.quantity}
-                          </span>
-                        </div>
-                      )}
+                      <div className="text-sm">
+                        <span className="text-gray-600">Total: </span>
+                        <span className="font-bold text-green-600 text-lg">
+                          ${quickSaleForm.items.reduce((sum, item) => {
+                            const product = products.find(p => p.id === item.productId)
+                            return sum + (product ? product.price * item.quantity : 0)
+                          }, 0)}
+                        </span>
+                      </div>
                     </div>
                     <button
                       onClick={createQuickSale}
-                      disabled={addingSale || !quickSaleForm.productId || !quickSaleForm.customerName}
+                      disabled={addingSale || !quickSaleForm.customerName || quickSaleForm.items.every(item => !item.productId)}
                       className="flex items-center space-x-2 px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
                     >
                       {addingSale ? (
@@ -1502,14 +1745,24 @@ const AdminDashboardPage = () => {
                   </div>
                 </div>
 
-                {/* Search Bar for Sales */}
-                <div>
-                  <SearchBar
-                    value={saleSearchTerm}
-                    onChange={setSaleSearchTerm}
-                    onSearch={searchSales}
-                    placeholder="Buscar ventas por nombre del cliente... (Presiona Enter)"
-                  />
+                {/* Search Bar and Export for Sales */}
+                <div className="flex items-center justify-between gap-4 mb-4">
+                  <div className="flex-1">
+                    <SearchBar
+                      value={saleSearchTerm}
+                      onChange={setSaleSearchTerm}
+                      onSearch={searchSales}
+                      placeholder="Buscar ventas por nombre del cliente... (Presiona Enter)"
+                    />
+                  </div>
+                  <button
+                    onClick={exportSales}
+                    className="flex items-center space-x-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm font-medium whitespace-nowrap"
+                    title="Exportar ventas a CSV"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span>Exportar</span>
+                  </button>
                 </div>
                 
                 {loadingSales ? (
@@ -1606,6 +1859,70 @@ const AdminDashboardPage = () => {
                                     <span className="text-sm text-gray-600">{sale.notes}</span>
                                   </div>
                                 )}
+
+                                {/* Products Section */}
+                                {sale.sales_items && sale.sales_items.length > 0 && (
+                                  <div className="mt-4 pt-4 border-t border-gray-200">
+                                    <button
+                                      onClick={() => {
+                                        const newExpanded = new Set(expandedSales)
+                                        if (newExpanded.has(sale.id)) {
+                                          newExpanded.delete(sale.id)
+                                        } else {
+                                          newExpanded.add(sale.id)
+                                        }
+                                        setExpandedSales(newExpanded)
+                                      }}
+                                      className="flex items-center space-x-2 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors"
+                                    >
+                                      {expandedSales.has(sale.id) ? (
+                                        <ChevronUp className="w-4 h-4" />
+                                      ) : (
+                                        <ChevronDown className="w-4 h-4" />
+                                      )}
+                                      <span>
+                                        Ver Productos ({sale.sales_items.length} {sale.sales_items.length === 1 ? 'producto' : 'productos'})
+                                      </span>
+                                    </button>
+
+                                    {expandedSales.has(sale.id) && (
+                                      <div className="mt-3 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                        {sale.sales_items.map((item: any) => (
+                                          <div key={item.id} className="bg-gray-50 rounded-lg border border-gray-200 p-3">
+                                            <div className="flex items-start space-x-3">
+                                              {item.products?.images && item.products.images.length > 0 && (
+                                                <img
+                                                  src={item.products.images[0]}
+                                                  alt={item.products.title}
+                                                  className="w-16 h-16 object-cover rounded border border-gray-300 flex-shrink-0"
+                                                />
+                                              )}
+                                              <div className="flex-1 min-w-0">
+                                                <h4 className="text-sm font-semibold text-gray-900 truncate">
+                                                  {item.products?.title || 'Producto no encontrado'}
+                                                </h4>
+                                                <div className="mt-1 space-y-1 text-xs text-gray-600">
+                                                  <div className="flex justify-between">
+                                                    <span>Cantidad:</span>
+                                                    <span className="font-medium">{item.quantity}</span>
+                                                  </div>
+                                                  <div className="flex justify-between">
+                                                    <span>Precio unitario:</span>
+                                                    <span className="font-medium">${item.unit_price}</span>
+                                                  </div>
+                                                  <div className="flex justify-between pt-1 border-t border-gray-200">
+                                                    <span className="font-semibold">Subtotal:</span>
+                                                    <span className="font-bold text-green-600">${item.subtotal}</span>
+                                                  </div>
+                                                </div>
+                                              </div>
+                                            </div>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
                               </div>
 
                               {/* Right: Actions */}
@@ -1620,6 +1937,14 @@ const AdminDashboardPage = () => {
                                   <option value="completado">Completado</option>
                                   <option value="cancelado">Cancelado</option>
                                 </select>
+                                <button
+                                  onClick={() => setEditingSale(sale)}
+                                  className="flex items-center space-x-1 px-3 py-1.5 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors text-sm font-medium"
+                                  title="Editar venta"
+                                >
+                                  <Save className="w-4 h-4" />
+                                  <span>Editar</span>
+                                </button>
                                 <button
                                   onClick={() => handleDeleteSale(sale)}
                                   className="flex items-center space-x-1 px-3 py-1.5 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors text-sm font-medium"
@@ -1907,6 +2232,19 @@ const AdminDashboardPage = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Sale Edit Form Modal */}
+      {editingSale && (
+        <SaleEditForm
+          sale={editingSale}
+          onClose={() => setEditingSale(null)}
+          onUpdate={() => {
+            loadSales()
+            loadRecentActivity()
+          }}
+          logActivity={logActivity}
+        />
       )}
 
       {/* Delete Product Confirmation Modal */}
