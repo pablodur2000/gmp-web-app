@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Menu, X, ShoppingBag, ChevronDown } from 'lucide-react'
 import { Category, NavigationItem } from '../types'
 import { supabase } from '../lib/supabase'
@@ -14,6 +14,7 @@ const Header = ({ onOpenContact }: HeaderProps) => {
   const [categories, setCategories] = useState<Category[]>([])
   const [isCatalogHovered, setIsCatalogHovered] = useState(false)
   const location = useLocation()
+  const navigate = useNavigate()
 
   // Load categories from database
   useEffect(() => {
@@ -211,7 +212,7 @@ const Header = ({ onOpenContact }: HeaderProps) => {
                   </button>
                 ) : (
                   <button
-                    onClick={() => item.href.startsWith('#') ? handleSmoothScroll(item.href) : window.location.href = item.href}
+                    onClick={() => item.href.startsWith('#') ? handleSmoothScroll(item.href) : navigate(item.href)}
                     className={`px-3 py-2 rounded-md text-sm font-medium transition-colors duration-100 ${
                       isActive(item.href)
                         ? 'text-leather-800 bg-leather-100'
@@ -257,7 +258,7 @@ const Header = ({ onOpenContact }: HeaderProps) => {
                     <div>
                       <button
                         onClick={() => {
-                          window.location.href = item.href
+                          navigate(item.href)
                           setIsMenuOpen(false)
                         }}
                         className={`block w-full text-left px-3 py-2 rounded-md text-base font-medium transition-colors duration-100 ${
@@ -330,7 +331,7 @@ const Header = ({ onOpenContact }: HeaderProps) => {
                         if (item.href.startsWith('#')) {
                           handleSmoothScroll(item.href)
                         } else {
-                          window.location.href = item.href
+                          navigate(item.href)
                         }
                         setIsMenuOpen(false)
                       }}

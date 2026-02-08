@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { LogOut, Plus, Package, X, CheckCircle, ShoppingBag, List, DollarSign, EyeOff, Sparkles, Save, Trash2, Bell, Mail, FolderPlus, ChevronDown, ChevronUp } from 'lucide-react'
+import { LogOut, Plus, Package, X, CheckCircle, ShoppingBag, List, DollarSign, EyeOff, Sparkles, Save, Trash2, Bell, Mail, FolderPlus, ChevronDown, ChevronUp, Clock, TrendingUp, Download } from 'lucide-react'
 import ProductForm from '../components/ProductForm'
 import ProductEditForm from '../components/ProductEditForm'
 import DeleteConfirmationModal from '../components/DeleteConfirmationModal'
@@ -348,6 +348,51 @@ const AdminDashboardPage = () => {
     }
   }
 
+  // Export functions
+  const exportToCSV = (data: any[], filename: string, headers: string[]) => {
+    // Create CSV content
+    const csvRows = []
+    
+    // Add headers
+    csvRows.push(headers.map(h => `"${h.replace(/"/g, '""')}"`).join(','))
+    
+    // Add data rows
+    data.forEach(row => {
+      const values = headers.map(header => {
+        const value = row[header] || ''
+        // Escape quotes and wrap in quotes
+        return `"${String(value).replace(/"/g, '""')}"`
+      })
+      csvRows.push(values.join(','))
+    })
+    
+    // Create blob and download
+    const csvContent = csvRows.join('\n')
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = filename
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+  }
+
+  const exportProducts = () => {
+    const headers = ['id', 'title', 'description', 'short_description', 'price', 'available', 'featured', 'inventory_status']
+    const date = new Date().toISOString().split('T')[0]
+    const filename = `products_${date}.csv`
+    exportToCSV(products, filename, headers)
+  }
+
+  const exportSales = () => {
+    const headers = ['id', 'customer_name', 'customer_email', 'customer_phone', 'total_amount', 'status', 'created_at', 'notes']
+    const date = new Date().toISOString().split('T')[0]
+    const filename = `sales_${date}.csv`
+    exportToCSV(sales, filename, headers)
+  }
+
   const loadMessages = async () => {
     try {
       setLoadingMessages(true)
@@ -689,6 +734,7 @@ const AdminDashboardPage = () => {
       
       // Refresh sales
       loadSales()
+      loadDashboardStats() // Refresh stats after deleting sale
       
       // Show success message
       setShowDeleteSuccess(true)
@@ -833,6 +879,7 @@ const AdminDashboardPage = () => {
       
       // Refresh products
       loadProducts()
+      loadDashboardStats() // Refresh stats after deleting product
       
       // Show success message
       setShowDeleteSuccess(true)
@@ -1204,7 +1251,7 @@ const AdminDashboardPage = () => {
 
       {/* Success Popup */}
       {showDeleteSuccess && (
-        <div className="fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-50 animate-fade-in">
+        <div className="fixed top-4 right-4 bg-green-500 text-white px-4 py-2 rounded-lg shadow-lg z-[100] animate-fade-in">
           <div className="flex items-center space-x-2">
             <CheckCircle className="w-5 h-5" />
             <span>Operación completada exitosamente</span>
@@ -2193,11 +2240,21 @@ const AdminDashboardPage = () => {
               </div>
               <ProductForm 
                 onSuccess={() => {
+                  // Close modal first
                   setShowProductForm(false)
+                  
+                  // Refresh data
                   if (showProductsCatalog) {
                     loadProducts()
                   }
                   loadRecentActivity()
+                  loadDashboardStats() // Refresh stats after creating product
+                  
+                  // Show success message after a small delay to ensure modal is closed
+                  setTimeout(() => {
+                    setShowDeleteSuccess(true)
+                    setTimeout(() => setShowDeleteSuccess(false), 2000)
+                  }, 100)
                 }}
                 logActivity={logActivity}
               />
@@ -2226,6 +2283,7 @@ const AdminDashboardPage = () => {
                 onUpdate={() => {
                   loadProducts()
                   loadRecentActivity()
+                  loadDashboardStats() // Refresh stats after editing product
                 }}
                 logActivity={logActivity}
               />
@@ -2242,6 +2300,7 @@ const AdminDashboardPage = () => {
           onUpdate={() => {
             loadSales()
             loadRecentActivity()
+            loadDashboardStats() // Refresh stats after editing sale
           }}
           logActivity={logActivity}
         />
