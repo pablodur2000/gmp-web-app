@@ -180,7 +180,7 @@ const ProductForm = ({ onSuccess, logActivity }: ProductFormProps) => {
           type="text"
           value={formData.title}
           onChange={(e) => setFormData({...formData, title: e.target.value})}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-leather-500 focus:ring-leather-500"
+          className="mt-1 block w-full px-3 py-2 border border-gray-400 rounded-md shadow-sm focus:border-leather-500 focus:ring-leather-500 focus:outline-none"
           required
         />
       </div>
@@ -192,7 +192,7 @@ const ProductForm = ({ onSuccess, logActivity }: ProductFormProps) => {
           value={formData.description}
           onChange={(e) => setFormData({...formData, description: e.target.value})}
           rows={4}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-leather-500 focus:ring-leather-500"
+          className="mt-1 block w-full px-3 py-2 border border-gray-400 rounded-md shadow-sm focus:border-leather-500 focus:ring-leather-500 focus:outline-none"
           required
         />
       </div>
@@ -204,7 +204,7 @@ const ProductForm = ({ onSuccess, logActivity }: ProductFormProps) => {
           type="text"
           value={formData.shortDescription}
           onChange={(e) => setFormData({...formData, shortDescription: e.target.value})}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-leather-500 focus:ring-leather-500"
+          className="mt-1 block w-full px-3 py-2 border border-gray-400 rounded-md shadow-sm focus:border-leather-500 focus:ring-leather-500 focus:outline-none"
           required
         />
       </div>
@@ -216,7 +216,7 @@ const ProductForm = ({ onSuccess, logActivity }: ProductFormProps) => {
           type="number"
           value={formData.price}
           onChange={(e) => setFormData({...formData, price: e.target.value})}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-leather-500 focus:ring-leather-500"
+          className="mt-1 block w-full px-3 py-2 border border-gray-400 rounded-md shadow-sm focus:border-leather-500 focus:ring-leather-500 focus:outline-none"
           required
         />
       </div>
@@ -227,7 +227,7 @@ const ProductForm = ({ onSuccess, logActivity }: ProductFormProps) => {
           <select
             value={formData.categoryId}
             onChange={(e) => setFormData({...formData, categoryId: e.target.value})}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-leather-500 focus:ring-leather-500"
+            className="mt-1 block w-full px-3 py-2 border border-gray-400 rounded-md shadow-sm focus:border-leather-500 focus:ring-leather-500 focus:outline-none bg-white"
             required
           >
             <option value="">Select a category</option>
@@ -282,7 +282,7 @@ const ProductForm = ({ onSuccess, logActivity }: ProductFormProps) => {
           <select
             value={formData.inventory_status}
             onChange={(e) => setFormData({...formData, inventory_status: e.target.value as InventoryStatus})}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-leather-500 focus:ring-leather-500"
+            className="mt-1 block w-full px-3 py-2 border border-gray-400 rounded-md shadow-sm focus:border-leather-500 focus:ring-leather-500 focus:outline-none bg-white"
             required
           >
             <option value="disponible_pieza_unica">Pieza Única</option>

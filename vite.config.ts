@@ -19,8 +19,9 @@ export default defineConfig({
       }
     }
   ],
-  // Vercel: set VITE_BASE_PATH=/ (or leave unset for root). GitHub Pages: set VITE_BASE_PATH=/gmp-web-app/
-  base: process.env.VITE_BASE_PATH ?? '/gmp-web-app/',
+  // All environments use root path (/)
+  // Can override with VITE_BASE_PATH environment variable if needed
+  base: process.env.VITE_BASE_PATH ?? '/',
   server: {
     port: 3000,
     open: true
