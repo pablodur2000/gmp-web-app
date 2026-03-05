@@ -13,38 +13,53 @@ const Footer = ({ onOpenContact }: FooterProps) => {
         <div className="grid md:grid-cols-4 gap-8">
           {/* Company Info */}
           <div className="md:col-span-2">
-            <div className="flex items-center mb-4">
-              <div className="h-12 flex items-center justify-center">
-                <img src={logo} alt="Logo" className="h-full w-auto object-contain" />
+            <div className="flex flex-col items-center">
+              {/* Logo */}
+              <div className="relative h-12 flex items-center justify-center px-2 mb-4">
+                {/* Oval background - wider than tall for true ellipse */}
+                <div 
+                  className="absolute bg-white" 
+                  style={{ 
+                    width: '140%', 
+                    height: '120%',
+                    left: '-20%',
+                    top: '-10%',
+                    borderRadius: '50%' // Creates oval/ellipse shape
+                  }}
+                ></div>
+                {/* Logo */}
+                <div className="relative z-10 h-full flex items-center justify-center">
+                  <img src={logo} alt="Logo" className="h-full w-auto object-contain" />
+                </div>
               </div>
-            </div>
-            
-            {/* Social Links */}
-            <div className="flex space-x-4">
-              <a
-                href="https://www.instagram.com/gmp.artesanias/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 bg-leather-800 rounded-full flex items-center justify-center text-leather-200 hover:bg-leather-700 hover:text-white transition-colors duration-200"
-              >
-                <Instagram className="w-5 h-5" />
-              </a>
-              <a
-                href="https://facebook.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 bg-leather-800 rounded-full flex items-center justify-center text-leather-200 hover:bg-leather-700 hover:text-white transition-colors duration-200"
-              >
-                <Facebook className="w-5 h-5" />
-              </a>
-              <a
-                href="https://wa.me/573001234567"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 bg-leather-800 rounded-full flex items-center justify-center text-leather-200 hover:bg-leather-700 hover:text-white transition-colors duration-200"
-              >
-                <MessageCircle className="w-5 h-5" />
-              </a>
+              
+              {/* Social Links */}
+              <div className="flex space-x-4">
+                <a
+                  href="https://www.instagram.com/gmp.artesanias/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-10 h-10 bg-leather-800 rounded-full flex items-center justify-center text-leather-200 hover:bg-leather-700 hover:text-white transition-colors duration-200"
+                >
+                  <Instagram className="w-5 h-5" />
+                </a>
+                <a
+                  href="https://facebook.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-10 h-10 bg-leather-800 rounded-full flex items-center justify-center text-leather-200 hover:bg-leather-700 hover:text-white transition-colors duration-200"
+                >
+                  <Facebook className="w-5 h-5" />
+                </a>
+                <a
+                  href="https://wa.me/573001234567"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-10 h-10 bg-leather-800 rounded-full flex items-center justify-center text-leather-200 hover:bg-leather-700 hover:text-white transition-colors duration-200"
+                >
+                  <MessageCircle className="w-5 h-5" />
+                </a>
+              </div>
             </div>
           </div>
 
