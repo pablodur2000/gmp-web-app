@@ -257,27 +257,22 @@ const ProductDetailPage = () => {
             </div>
 
             {/* Features */}
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Características</h3>
-              <ul className="space-y-2 text-gray-600">
-                <li className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-leather-600 rounded-full"></div>
-                  <span>Cuero genuino de primera calidad</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-leather-600 rounded-full"></div>
-                  <span>Hecho completamente a mano</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-leather-600 rounded-full"></div>
-                  <span>Diseño único y elegante</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <div className="w-2 h-2 bg-leather-600 rounded-full"></div>
-                  <span>Durabilidad garantizada</span>
-                </li>
-              </ul>
-            </div>
+            {product.features && product.features.trim() && (
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-3">Características</h3>
+                <ul className="space-y-2 text-gray-600">
+                  {product.features
+                    .split('\n')
+                    .filter(feature => feature.trim()) // Remove empty lines
+                    .map((feature, index) => (
+                      <li key={index} className="flex items-center space-x-2">
+                        <div className="w-2 h-2 bg-leather-600 rounded-full flex-shrink-0"></div>
+                        <span>{feature.trim()}</span>
+                      </li>
+                    ))}
+                </ul>
+              </div>
+            )}
 
             {/* Contact Actions */}
             <div className="space-y-4 mb-8">

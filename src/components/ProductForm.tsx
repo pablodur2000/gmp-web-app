@@ -23,7 +23,8 @@ const ProductForm = ({ onSuccess, logActivity }: ProductFormProps) => {
     categoryId: '',
     available: true,
     featured: false,
-    inventory_status: 'disponible_pieza_unica' as InventoryStatus
+    inventory_status: 'disponible_pieza_unica' as InventoryStatus,
+    features: '' // One feature per line/paragraph
   })
   const [images, setImages] = useState<File[]>([])
   const [uploading, setUploading] = useState(false)
@@ -104,7 +105,8 @@ const ProductForm = ({ onSuccess, logActivity }: ProductFormProps) => {
         available: formData.available,
         featured: formData.featured,
         inventory_status: formData.inventory_status,
-        images: imageUrls
+        images: imageUrls,
+        features: formData.features.trim() || null // Store features, one per line
       }
       
       console.log('Product data to insert:', productData)
@@ -152,7 +154,8 @@ const ProductForm = ({ onSuccess, logActivity }: ProductFormProps) => {
         categoryId: '', 
         available: true, 
         featured: false,
-        inventory_status: 'disponible_pieza_unica'
+        inventory_status: 'disponible_pieza_unica',
+        features: ''
       })
       setImages([])
       
@@ -206,6 +209,26 @@ const ProductForm = ({ onSuccess, logActivity }: ProductFormProps) => {
           onChange={(e) => setFormData({...formData, shortDescription: e.target.value})}
           className="mt-1 block w-full px-3 py-2 border border-gray-400 rounded-md shadow-sm focus:border-leather-500 focus:ring-leather-500 focus:outline-none"
           required
+        />
+      </div>
+
+      {/* Features/Características */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700">
+          Características
+        </label>
+        <p className="text-xs text-gray-500 mb-1">
+          Una característica por línea. Cada línea será mostrada como un punto separado.
+        </p>
+        <textarea
+          value={formData.features}
+          onChange={(e) => setFormData({...formData, features: e.target.value})}
+          rows={6}
+          placeholder="Cuero genuino de primera calidad
+Hecho completamente a mano
+Diseño único y elegante
+Durabilidad garantizada"
+          className="mt-1 block w-full px-3 py-2 border border-gray-400 rounded-md shadow-sm focus:border-leather-500 focus:ring-leather-500 focus:outline-none font-mono text-sm"
         />
       </div>
 

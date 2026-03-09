@@ -12,6 +12,7 @@ export interface Product {
   inventory_status: InventoryStatus
   main_category: 'cuero' | 'macrame'
   images: string[]
+  features?: string // Features/características, one per line/paragraph
   created_at: string
   updated_at: string
   categories?: {

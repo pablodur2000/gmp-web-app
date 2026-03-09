@@ -25,7 +25,8 @@ const ProductEditForm = ({ product, onClose, onUpdate, logActivity }: ProductEdi
     categoryId: product.category_id || '',
     available: product.available ?? true,
     featured: product.featured ?? false,
-    inventory_status: product.inventory_status || 'disponible_pieza_unica'
+    inventory_status: product.inventory_status || 'disponible_pieza_unica',
+    features: product.features || '' // One feature per line/paragraph
   })
   const [images, setImages] = useState<File[]>([])
   const [existingImages, setExistingImages] = useState<string[]>(product.images || [])
@@ -143,6 +144,7 @@ const ProductEditForm = ({ product, onClose, onUpdate, logActivity }: ProductEdi
           featured: formData.featured,
           inventory_status: formData.inventory_status,
           images: finalImages,
+          features: formData.features.trim() || null, // Store features, one per line
           updated_at: new Date().toISOString()
         })
         .eq('id', product.id)
@@ -252,6 +254,26 @@ const ProductEditForm = ({ product, onClose, onUpdate, logActivity }: ProductEdi
           {formData.shortDescription.length}/300 caracteres
         </p>
         {errors.shortDescription && <p className="text-red-500 text-sm mt-1">{errors.shortDescription}</p>}
+      </div>
+
+      {/* Features/Características */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Características
+        </label>
+        <p className="text-xs text-gray-500 mb-1">
+          Una característica por línea. Cada línea será mostrada como un punto separado.
+        </p>
+        <textarea
+          value={formData.features}
+          onChange={(e) => setFormData({ ...formData, features: e.target.value })}
+          rows={6}
+          placeholder="Cuero genuino de primera calidad
+Hecho completamente a mano
+Diseño único y elegante
+Durabilidad garantizada"
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-leather-500 focus:border-transparent font-mono text-sm"
+        />
       </div>
 
       {/* Price and Category */}
