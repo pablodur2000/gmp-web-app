@@ -1360,6 +1360,7 @@ const AdminDashboardPage = () => {
                   setShowCategoriesView(false) // Close categories view when opening product form
                 }}
                 className="group relative overflow-hidden bg-gradient-to-br from-leather-50 to-leather-100 border-2 border-leather-200 rounded-xl p-6 hover:border-leather-400 hover:shadow-lg transition-all duration-300 transform hover:-translate-y-1"
+                data-testid="admin-add-product-button"
               >
                 <div className="flex flex-col items-center text-center space-y-3">
                   <div className="p-4 bg-leather-600 rounded-full group-hover:scale-110 transition-transform duration-300">
@@ -1389,6 +1390,7 @@ const AdminDashboardPage = () => {
                     ? 'bg-gradient-to-br from-blue-50 to-blue-100 border-blue-300 shadow-lg' 
                     : 'bg-gradient-to-br from-gray-50 to-white border-gray-200 hover:border-blue-300 hover:shadow-lg'
                 }`}
+                data-testid="admin-manage-products-button"
               >
                 <div className="flex flex-col items-center text-center space-y-3">
                   <div className={`p-4 rounded-full transition-transform duration-300 group-hover:scale-110 ${
@@ -1545,7 +1547,7 @@ const AdminDashboardPage = () => {
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {products.map((product) => (
-                      <div key={product.id} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                      <div key={product.id} className="bg-gray-50 rounded-lg p-4 border border-gray-200" data-testid={`admin-product-card-${product.id}`}>
                         <div className="flex justify-between items-start mb-3">
                           <h3 className="font-medium text-gray-900 text-sm line-clamp-2">
                             {product.title}
@@ -1554,6 +1556,7 @@ const AdminDashboardPage = () => {
                             <button 
                               onClick={() => handleEditProduct(product)}
                               className="text-blue-600 hover:text-blue-800 text-xs hover:bg-blue-50 px-2 py-1 rounded transition-colors"
+                              data-testid={`admin-edit-product-button-${product.id}`}
                             >
                               Editar
                             </button>
@@ -2218,11 +2221,11 @@ const AdminDashboardPage = () => {
 
       {/* Product Form Modal */}
       {showProductForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" data-testid="admin-product-form-modal">
           <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-medium">Crear Nuevo Producto</h3>
+                <h3 className="text-lg font-medium" data-testid="admin-product-form-modal-title">Crear Nuevo Producto</h3>
                 <button
                   onClick={() => {
                     setShowProductForm(false)
@@ -2234,6 +2237,7 @@ const AdminDashboardPage = () => {
                     loadRecentActivity()
                   }}
                   className="text-gray-400 hover:text-gray-600"
+                  data-testid="admin-product-form-modal-close-button"
                 >
                   <X className="w-6 h-6" />
                 </button>
@@ -2265,14 +2269,15 @@ const AdminDashboardPage = () => {
 
       {/* Product Edit Form Modal */}
       {editingProduct && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" data-testid="admin-product-edit-modal">
           <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-medium">Editar Producto: {editingProduct.title}</h3>
+                <h3 className="text-lg font-medium" data-testid="admin-product-edit-modal-title">Editar Producto: {editingProduct.title}</h3>
                 <button
                   onClick={() => setEditingProduct(null)}
                   className="text-gray-400 hover:text-gray-600"
+                  data-testid="admin-product-edit-modal-close-button"
                 >
                   <X className="w-6 h-6" />
                 </button>

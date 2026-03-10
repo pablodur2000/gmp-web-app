@@ -175,7 +175,7 @@ const ProductForm = ({ onSuccess, logActivity }: ProductFormProps) => {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6" data-testid="admin-product-form">
       {/* Title */}
       <div>
         <label className="block text-sm font-medium text-gray-700">Title</label>
@@ -185,6 +185,7 @@ const ProductForm = ({ onSuccess, logActivity }: ProductFormProps) => {
           onChange={(e) => setFormData({...formData, title: e.target.value})}
           className="mt-1 block w-full px-3 py-2 border border-gray-400 rounded-md shadow-sm focus:border-leather-500 focus:ring-leather-500 focus:outline-none"
           required
+          data-testid="admin-product-form-title-input"
         />
       </div>
 
@@ -197,6 +198,7 @@ const ProductForm = ({ onSuccess, logActivity }: ProductFormProps) => {
           rows={4}
           className="mt-1 block w-full px-3 py-2 border border-gray-400 rounded-md shadow-sm focus:border-leather-500 focus:ring-leather-500 focus:outline-none"
           required
+          data-testid="admin-product-form-description-input"
         />
       </div>
 
@@ -209,6 +211,7 @@ const ProductForm = ({ onSuccess, logActivity }: ProductFormProps) => {
           onChange={(e) => setFormData({...formData, shortDescription: e.target.value})}
           className="mt-1 block w-full px-3 py-2 border border-gray-400 rounded-md shadow-sm focus:border-leather-500 focus:ring-leather-500 focus:outline-none"
           required
+          data-testid="admin-product-form-short-description-input"
         />
       </div>
 
@@ -229,6 +232,7 @@ Hecho completamente a mano
 Diseño único y elegante
 Durabilidad garantizada"
           className="mt-1 block w-full px-3 py-2 border border-gray-400 rounded-md shadow-sm focus:border-leather-500 focus:ring-leather-500 focus:outline-none font-mono text-sm"
+          data-testid="admin-product-form-features-input"
         />
       </div>
 
@@ -241,6 +245,7 @@ Durabilidad garantizada"
           onChange={(e) => setFormData({...formData, price: e.target.value})}
           className="mt-1 block w-full px-3 py-2 border border-gray-400 rounded-md shadow-sm focus:border-leather-500 focus:ring-leather-500 focus:outline-none"
           required
+          data-testid="admin-product-form-price-input"
         />
       </div>
 
@@ -252,6 +257,7 @@ Durabilidad garantizada"
             onChange={(e) => setFormData({...formData, categoryId: e.target.value})}
             className="mt-1 block w-full px-3 py-2 border border-gray-400 rounded-md shadow-sm focus:border-leather-500 focus:ring-leather-500 focus:outline-none bg-white"
             required
+            data-testid="admin-product-form-category-select"
           >
             <option value="">Select a category</option>
             {categories.map(cat => (
@@ -279,6 +285,7 @@ Durabilidad garantizada"
             checked={formData.available}
             onChange={(e) => setFormData({...formData, available: e.target.checked})}
             className="rounded border-gray-300 text-leather-600 focus:ring-leather-500"
+            data-testid="admin-product-form-available-checkbox"
           />
           <span className="ml-2 text-sm text-gray-700">Available</span>
         </label>
@@ -291,6 +298,7 @@ Durabilidad garantizada"
             checked={formData.featured}
             onChange={(e) => setFormData({...formData, featured: e.target.checked})}
             className="h-4 w-4 text-leather-600 focus:ring-leather-500 border-gray-300 rounded"
+            data-testid="admin-product-form-featured-checkbox"
           />
           <label htmlFor="featured" className="ml-2 block text-sm text-gray-900">
             Producto destacado
@@ -307,6 +315,7 @@ Durabilidad garantizada"
             onChange={(e) => setFormData({...formData, inventory_status: e.target.value as InventoryStatus})}
             className="mt-1 block w-full px-3 py-2 border border-gray-400 rounded-md shadow-sm focus:border-leather-500 focus:ring-leather-500 focus:outline-none bg-white"
             required
+            data-testid="admin-product-form-inventory-status-select"
           >
             <option value="disponible_pieza_unica">Pieza Única</option>
             <option value="disponible_encargo_mismo_material">Encargo Mismo Material</option>
@@ -335,6 +344,7 @@ Durabilidad garantizada"
                     setImages(files)
                   }}
                   className="sr-only"
+                  data-testid="admin-product-form-image-upload-input"
                 />
               </label>
             </div>
@@ -369,6 +379,7 @@ Durabilidad garantizada"
         type="submit"
         disabled={uploading}
         className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-leather-600 hover:bg-leather-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-leather-500 disabled:opacity-50"
+        data-testid="admin-product-form-submit-button"
       >
         {uploading ? 'Creating Product...' : 'Create Product'}
       </button>

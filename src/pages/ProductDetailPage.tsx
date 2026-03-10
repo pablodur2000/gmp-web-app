@@ -134,12 +134,12 @@ const ProductDetailPage = () => {
       {/* Breadcrumb */}
       <div className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <nav className="flex items-center space-x-2 text-sm text-gray-500">
-            <Link to="/" className="hover:text-leather-600">Inicio</Link>
+          <nav className="flex items-center space-x-2 text-sm text-gray-500" data-testid="product-detail-breadcrumb">
+            <Link to="/" className="hover:text-leather-600" data-testid="product-detail-breadcrumb-inicio">Inicio</Link>
             <span>/</span>
-            <Link to="/catalogo" className="hover:text-leather-600">Catálogo</Link>
+            <Link to="/catalogo" className="hover:text-leather-600" data-testid="product-detail-breadcrumb-catalogo">Catálogo</Link>
             <span>/</span>
-            <span className="text-gray-900">{product.title}</span>
+            <span className="text-gray-900" data-testid="product-detail-breadcrumb-current">{product.title}</span>
           </nav>
         </div>
       </div>

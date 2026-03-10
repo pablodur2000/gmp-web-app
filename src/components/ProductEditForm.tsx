@@ -200,7 +200,7 @@ const ProductEditForm = ({ product, onClose, onUpdate, logActivity }: ProductEdi
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6" data-testid="admin-product-edit-form">
       {/* Title */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -214,6 +214,7 @@ const ProductEditForm = ({ product, onClose, onUpdate, logActivity }: ProductEdi
             errors.title ? 'border-red-500' : 'border-gray-300'
           }`}
           placeholder="Ej: Billetera de Cuero Premium"
+          data-testid="admin-product-edit-form-title-input"
         />
         {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
       </div>
@@ -430,6 +431,7 @@ Durabilidad garantizada"
           type="submit"
           disabled={uploading}
           className="px-4 py-2 bg-leather-600 text-white rounded-lg hover:bg-leather-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center space-x-2"
+          data-testid="admin-product-edit-form-submit-button"
         >
           {uploading ? (
             <>
