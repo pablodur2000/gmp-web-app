@@ -1515,7 +1515,7 @@ const AdminDashboardPage = () => {
           <div className="p-6">
             {showProductsCatalog ? (
               // Products Catalog View
-              <div>
+              <div data-testid="admin-products-catalog-content">
                 {/* Search Bar and Export for Products */}
                 <div className="mb-6 flex items-center justify-between gap-4">
                   <div className="flex-1">
@@ -1530,6 +1530,7 @@ const AdminDashboardPage = () => {
                     onClick={exportProducts}
                     className="flex items-center space-x-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm font-medium whitespace-nowrap"
                     title="Exportar productos a CSV"
+                    data-testid="admin-export-products-button"
                   >
                     <Download className="w-4 h-4" />
                     <span>Exportar</span>
@@ -1537,15 +1538,15 @@ const AdminDashboardPage = () => {
                 </div>
                 
                 {loadingProducts ? (
-                  <div className="flex justify-center py-8">
+                  <div className="flex justify-center py-8" data-testid="admin-products-loading">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-leather-600"></div>
                   </div>
                 ) : products.length === 0 ? (
-                  <p className="text-gray-500 text-center py-8">
+                  <p className="text-gray-500 text-center py-8" data-testid="admin-products-empty-state">
                     {productSearchTerm ? `No se encontraron productos que coincidan con "${productSearchTerm}"` : 'No se encontraron productos. ¡Crea tu primer producto!'}
                   </p>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" data-testid="admin-product-list">
                     {products.map((product) => (
                       <div key={product.id} className="bg-gray-50 rounded-lg p-4 border border-gray-200" data-testid={`admin-product-card-${product.id}`}>
                         <div className="flex justify-between items-start mb-3">
@@ -1563,6 +1564,7 @@ const AdminDashboardPage = () => {
                             <button 
                               onClick={() => handleDeleteProduct(product)}
                               className="text-red-600 hover:text-red-800 text-xs hover:bg-red-50 px-2 py-1 rounded transition-colors"
+                              data-testid={`admin-delete-product-button-${product.id}`}
                             >
                               Eliminar
                             </button>

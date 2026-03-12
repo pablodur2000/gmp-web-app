@@ -110,7 +110,7 @@ const ProductDetailPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" data-testid="product-detail-loading">
         <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-leather-600"></div>
       </div>
     )
@@ -118,7 +118,7 @@ const ProductDetailPage = () => {
 
   if (!product) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" data-testid="product-detail-not-found">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Producto no encontrado</h2>
           <Link to="/catalogo" className="btn-primary">
@@ -130,7 +130,7 @@ const ProductDetailPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50" data-testid="product-detail-page">
       {/* Breadcrumb */}
       <div className="bg-white border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -147,7 +147,7 @@ const ProductDetailPage = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid lg:grid-cols-2 gap-12">
           {/* Product Images */}
-          <div>
+          <div data-testid="product-detail-image-gallery">
             {product.images && product.images.length > 0 ? (
               <>
                 <div className="aspect-square rounded-xl overflow-hidden bg-white shadow-lg mb-4">
@@ -155,6 +155,7 @@ const ProductDetailPage = () => {
                     src={product.images[selectedImage] || product.images[0]}
                     alt={product.title}
                     className="w-full h-full object-cover"
+                    data-testid="product-detail-main-image"
                     onError={(e) => {
                       (e.target as HTMLImageElement).src = 'https://via.placeholder.com/500?text=Imagen+no+disponible'
                     }}
@@ -168,6 +169,7 @@ const ProductDetailPage = () => {
                       <button
                         key={index}
                         onClick={() => setSelectedImage(index)}
+                        data-testid={`product-detail-thumbnail-${index}`}
                         className={`w-20 h-20 rounded-lg overflow-hidden border-2 transition-colors duration-200 ${
                           selectedImage === index 
                             ? 'border-leather-600' 
@@ -188,7 +190,7 @@ const ProductDetailPage = () => {
                 )}
               </>
             ) : (
-              <div className="aspect-square rounded-xl overflow-hidden bg-gray-200 shadow-lg mb-4 flex items-center justify-center">
+              <div className="aspect-square rounded-xl overflow-hidden bg-gray-200 shadow-lg mb-4 flex items-center justify-center" data-testid="product-detail-no-image">
                 <span className="text-gray-400">Sin imagen</span>
               </div>
             )}
@@ -207,7 +209,7 @@ const ProductDetailPage = () => {
 
             {/* Title and Badges */}
             <div className="mb-4">
-              <h1 className="text-3xl font-serif font-bold text-gray-900 mb-2">
+              <h1 className="text-3xl font-serif font-bold text-gray-900 mb-2" data-testid="product-detail-title">
                 {product.title}
               </h1>
               <div className="flex items-center space-x-3">
@@ -228,7 +230,7 @@ const ProductDetailPage = () => {
 
             {/* Price */}
             <div className="mb-4">
-              <span className="text-3xl font-bold text-leather-800">
+              <span className="text-3xl font-bold text-leather-800" data-testid="product-detail-price">
                 {formatPrice(product.price)}
               </span>
             </div>
@@ -251,7 +253,7 @@ const ProductDetailPage = () => {
             {/* Description */}
             <div className="mb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Descripción</h3>
-              <p className="text-gray-600 leading-relaxed">
+              <p className="text-gray-600 leading-relaxed" data-testid="product-detail-description">
                 {product.description}
               </p>
             </div>
@@ -311,7 +313,7 @@ const ProductDetailPage = () => {
         </div>
 
         {/* Related Products Section */}
-        <div className="mt-16">
+        <div className="mt-16" data-testid="product-detail-related-products">
           <h2 className="text-2xl font-serif font-bold text-leather-800 mb-8">
             Productos Relacionados
           </h2>
