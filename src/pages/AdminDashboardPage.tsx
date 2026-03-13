@@ -1420,6 +1420,7 @@ const AdminDashboardPage = () => {
 
               {/* View Sales Card */}
               <button 
+                data-testid="admin-sales-view-card"
                 onClick={() => {
                   setShowSalesView(!showSalesView)
                   if (!showSalesView) {
@@ -1506,7 +1507,18 @@ const AdminDashboardPage = () => {
         {/* Recent Activity / Products Catalog / Sales View */}
         <div className="mt-8 bg-white rounded-lg shadow">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-medium text-gray-900">
+            <h2
+              className="text-lg font-medium text-gray-900"
+              data-testid={
+                showProductsCatalog
+                  ? 'admin-products-view-header'
+                  : showSalesView
+                  ? 'admin-sales-view-header'
+                  : showCategoriesView
+                  ? 'admin-categories-view-header'
+                  : 'admin-activity-view-header'
+              }
+            >
               {showProductsCatalog ? 'Catálogo de Productos' : 
                showSalesView ? 'Ventas' : 
                showCategoriesView ? 'Categorías' : 'Actividad Reciente'}
@@ -1805,6 +1817,7 @@ const AdminDashboardPage = () => {
                       onChange={setSaleSearchTerm}
                       onSearch={searchSales}
                       placeholder="Buscar ventas por nombre del cliente... (Presiona Enter)"
+                      data-testid="admin-sales-search-input"
                     />
                   </div>
                   <button
@@ -1825,7 +1838,9 @@ const AdminDashboardPage = () => {
                   <div className="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
                     <ShoppingBag className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                     <p className="text-gray-500 text-lg font-medium">
-                      {saleSearchTerm ? `No se encontraron ventas que coincidan con "${saleSearchTerm}"` : 'No hay ventas registradas'}
+                      <p data-testid="admin-sales-empty-state">
+                        {saleSearchTerm ? `No se encontraron ventas que coincidan con "${saleSearchTerm}"` : 'No hay ventas registradas'}
+                      </p>
                     </p>
                     <p className="text-gray-400 text-sm mt-2">
                       {!saleSearchTerm && 'Usa el formulario de arriba para crear tu primera venta'}
@@ -1834,7 +1849,7 @@ const AdminDashboardPage = () => {
                 ) : (
                   <div className="space-y-4">
                     {/* Legend for status colors */}
-                    <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <div className="p-4 bg-gray-50 rounded-lg border border-gray-200" data-testid="admin-sales-legend">
                       <p className="text-sm font-medium text-gray-700 mb-3">Leyenda de Estados:</p>
                       <div className="flex flex-wrap gap-4 text-xs">
                         <div className="flex items-center space-x-2">
@@ -1857,9 +1872,13 @@ const AdminDashboardPage = () => {
                     </div>
                     
                     {/* Sales List */}
-                    <div className="space-y-3">
+                    <div className="space-y-3" data-testid="admin-sales-list">
                       {sales.map((sale) => (
-                        <div key={sale.id} className="bg-white rounded-lg border-2 border-gray-200 hover:border-green-300 transition-colors duration-200 overflow-hidden">
+                        <div
+                          key={sale.id}
+                          className="bg-white rounded-lg border-2 border-gray-200 hover:border-green-300 transition-colors duration-200 overflow-hidden"
+                          data-testid={`admin-sale-card-${sale.id}`}
+                        >
                           <div className="p-5">
                             <div className="flex items-start justify-between">
                               {/* Left: Customer Info */}
@@ -1983,6 +2002,7 @@ const AdminDashboardPage = () => {
                                   value={sale.status}
                                   onChange={(e) => updateSaleStatus(sale.id, e.target.value)}
                                   className="px-3 py-1.5 rounded-lg text-sm font-medium border-2 border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white"
+                                  data-testid={`admin-sale-status-select-${sale.id}`}
                                 >
                                   <option value="pendiente">Pendiente</option>
                                   <option value="en_proceso">En Proceso</option>
@@ -2126,7 +2146,7 @@ const AdminDashboardPage = () => {
                   />
                   
                   {/* Action Type Filter Pills */}
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-2" data-testid="admin-activity-filters">
                     <button
                       onClick={() => setActivityFilter('all')}
                       className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
@@ -2134,6 +2154,7 @@ const AdminDashboardPage = () => {
                           ? 'bg-leather-600 text-white'
                           : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
+                      data-testid="admin-activity-filter-all"
                     >
                       Todos
                     </button>
@@ -2144,6 +2165,7 @@ const AdminDashboardPage = () => {
                             ? 'bg-leather-600 text-white'
                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                         }`}
+                      data-testid="admin-activity-filter-create"
                     >
                       Crear
                     </button>
@@ -2154,6 +2176,7 @@ const AdminDashboardPage = () => {
                           ? 'bg-blue-600 text-white'
                           : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                       }`}
+                      data-testid="admin-activity-filter-update"
                     >
                       Actualizar
                     </button>
@@ -2164,6 +2187,7 @@ const AdminDashboardPage = () => {
                           ? 'bg-red-600 text-white'
                           : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                       }`}
+                      data-testid="admin-activity-filter-delete"
                     >
                       Eliminar
                     </button>
@@ -2171,16 +2195,16 @@ const AdminDashboardPage = () => {
                 </div>
                 
                 {recentActivity.length === 0 ? (
-                  <p className="text-gray-500 text-center py-8">
+                  <p className="text-gray-500 text-center py-8" data-testid="admin-activity-empty-state">
                     {activitySearchTerm || activityFilter !== 'all' 
                       ? 'No se encontraron actividades que coincidan con los filtros' 
                       : 'No hay actividad reciente para mostrar'
                     }
                   </p>
                 ) : (
-                  <div className="space-y-4">
+                  <div className="space-y-4" data-testid="admin-activity-list">
                     {recentActivity.map((activity) => (
-                      <div key={activity.id} className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
+                      <div key={activity.id} className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg" data-testid={`admin-activity-row-${activity.id}`}>
                         <div className={`w-2 h-2 rounded-full mt-2 ${
                           activity.action_type === 'CREATE' ? 'bg-green-500' :
                           activity.action_type === 'UPDATE' ? 'bg-blue-500' :
@@ -2190,14 +2214,14 @@ const AdminDashboardPage = () => {
                         <div className="flex-1 min-w-0">
                           <div className="flex justify-between items-start">
                             <div className="flex-1">
-                              <p className="text-sm font-medium text-gray-900">
+                              <p className="text-sm font-medium text-gray-900" data-testid={`admin-activity-action-text-${activity.id}`}>
                                 {formatActionText(activity.action_type, activity.resource_type, activity.resource_name)}
                               </p>
-                              <p className="text-xs text-gray-500">
+                              <p className="text-xs text-gray-500" data-testid={`admin-activity-metadata-${activity.id}`}>
                                 by {activity.user_email} • {new Date(activity.created_at).toLocaleString()}
                               </p>
                               {activity.details && (
-                                <div className="mt-1 text-xs text-gray-600">
+                                <div className="mt-1 text-xs text-gray-600" data-testid={`admin-activity-details-${activity.id}`}>
                                   {formatActivityDetails(activity.details)}
                                 </div>
                               )}
@@ -2206,6 +2230,7 @@ const AdminDashboardPage = () => {
                               onClick={() => deleteActivityLog(activity.id)}
                               className="ml-2 text-red-500 hover:text-red-700 text-xs p-1 rounded hover:bg-red-50 transition-colors"
                               title="Eliminar log"
+                              data-testid={`admin-activity-delete-button-${activity.id}`}
                             >
                               <X className="w-4 h-4" />
                             </button>

@@ -202,6 +202,7 @@ const ProductDetailPage = () => {
             <Link
               to="/catalogo"
               className="inline-flex items-center space-x-2 text-leather-600 hover:text-leather-800 mb-6 transition-colors duration-200"
+              data-testid="product-detail-back-to-catalog"
             >
               <ArrowLeft className="w-4 h-4" />
               <span>Volver al Catálogo</span>
