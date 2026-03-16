@@ -287,13 +287,28 @@ const AdminDashboardPage = () => {
         .order('id', { ascending: false })
       
       if (error) {
-        console.error('Error loading sales:', error)
+        console.error('❌ Error loading sales:', error)
+        console.error('Error details:', {
+          message: error.message,
+          code: error.code,
+          details: error.details,
+          hint: error.hint
+        })
+        // Still set empty array to clear any stale data
+        setSales([])
         return
       }
       
+      console.log(`✅ Loaded ${data?.length || 0} sales`)
       setSales(data || [])
-    } catch (error) {
-      console.error('Error loading sales:', error)
+    } catch (error: any) {
+      console.error('❌ Exception loading sales:', error)
+      console.error('Exception details:', {
+        message: error?.message,
+        stack: error?.stack
+      })
+      // Still set empty array to clear any stale data
+      setSales([])
     } finally {
       setLoadingSales(false)
     }

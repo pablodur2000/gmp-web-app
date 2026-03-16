@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowRight } from 'lucide-react'
+import logo from '../img/logo.png'
 
 const HeroSection = () => {
   const [currentSlide, setCurrentSlide] = useState(0)
@@ -136,22 +137,18 @@ const HeroSection = () => {
       {/* First Visit Animation Overlay */}
       {showFirstVisitAnimation && (
         <>
-          {/* Logo - shows immediately, then disappears */}
+          {/* Logo - same as header; shows immediately, then disappears */}
           <div 
             className={`fixed inset-0 z-50 flex items-center justify-center transition-all duration-500 ${
               animationStep >= 2 ? 'opacity-0 scale-95' : 'opacity-100 scale-100'
             }`}
             data-testid="home-hero-first-visit-logo"
           >
-            <div className="text-center">
-              <div className="w-32 h-32 bg-leather-600 rounded-full flex items-center justify-center mx-auto mb-6">
-                <span className="text-4xl text-white font-bold">P</span>
-              </div>
-              <h1 className="text-3xl font-serif font-bold text-leather-800">
-                Paquetitos
-              </h1>
-              <p className="text-leather-600 mt-2">Artesanías en Cuero</p>
-            </div>
+            <img
+              src={logo}
+              alt="GMP - Artesanías en Cuero"
+              className="h-24 w-auto object-contain md:h-32"
+            />
           </div>
           
           {/* White curtain that covers entire screen and slides UP smoothly */}
