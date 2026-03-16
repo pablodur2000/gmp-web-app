@@ -185,6 +185,15 @@ const AdminDashboardPage = () => {
     }
   }
 
+  // Helper function to refresh activity logs respecting search/filter state
+  const refreshActivityLogs = () => {
+    if (activitySearchTerm.trim() || activityFilter !== 'all') {
+      searchActivity()
+    } else {
+      loadRecentActivity()
+    }
+  }
+
   const loadProducts = async () => {
     setLoadingProducts(true)
     try {
@@ -546,6 +555,7 @@ const AdminDashboardPage = () => {
         .from('activity_logs')
         .select('*')
         .order('created_at', { ascending: false })
+        .limit(100) // Add limit for consistency with loadRecentActivity
       
       // Apply search filter
       if (activitySearchTerm.trim()) {
@@ -675,9 +685,14 @@ const AdminDashboardPage = () => {
         ]
       })
 
-      // Refresh sales
-      loadSales()
+      // Refresh sales (respecting search state)
+      if (saleSearchTerm.trim()) {
+        searchSales()
+      } else {
+        loadSales()
+      }
       loadDashboardStats()
+      refreshActivityLogs() // Refresh activity logs after creating sale
 
       // Show success
       setShowDeleteSuccess(true)
@@ -732,9 +747,14 @@ const AdminDashboardPage = () => {
       
       console.log('✅ Activity logged successfully')
       
-      // Refresh sales
-      loadSales()
+      // Refresh sales (respecting search state)
+      if (saleSearchTerm.trim()) {
+        searchSales()
+      } else {
+        loadSales()
+      }
       loadDashboardStats() // Refresh stats after deleting sale
+      refreshActivityLogs() // Refresh activity logs after deleting sale
       
       // Show success message
       setShowDeleteSuccess(true)
@@ -796,8 +816,13 @@ const AdminDashboardPage = () => {
         }
       })
       
-      // Refresh sales data
-      loadSales()
+      // Refresh sales data (respecting search state)
+      if (saleSearchTerm.trim()) {
+        searchSales()
+      } else {
+        loadSales()
+      }
+      refreshActivityLogs() // Refresh activity logs after updating sale status
       
     } catch (error) {
       console.error('❌ Error updating sale status:', error)
@@ -817,8 +842,8 @@ const AdminDashboardPage = () => {
         return
       }
       
-      // Refresh activity logs
-      loadRecentActivity()
+      // Refresh activity logs respecting search/filter state
+      refreshActivityLogs()
       
       // Show success popup
       setShowDeleteSuccess(true)
@@ -877,9 +902,14 @@ const AdminDashboardPage = () => {
       
       console.log('✅ Activity logged successfully')
       
-      // Refresh products
-      loadProducts()
+      // Refresh products (respecting search state)
+      if (productSearchTerm.trim()) {
+        searchProducts()
+      } else {
+        loadProducts()
+      }
       loadDashboardStats() // Refresh stats after deleting product
+      refreshActivityLogs() // Refresh activity logs after deleting product
       
       // Show success message
       setShowDeleteSuccess(true)
@@ -1051,8 +1081,13 @@ const AdminDashboardPage = () => {
         }
       })
       
-      // Refresh categories list
-      loadCategories()
+      // Refresh categories list (respecting search state)
+      if (categorySearchTerm.trim()) {
+        searchCategories()
+      } else {
+        loadCategories()
+      }
+      refreshActivityLogs() // Refresh activity logs after deleting category
       
       // Close modal
       setShowDeleteCategoryModal(false)
@@ -2256,12 +2291,14 @@ const AdminDashboardPage = () => {
                 <button
                   onClick={() => {
                     setShowProductForm(false)
-                    // Refresh products if catalog is visible
-                    if (showProductsCatalog) {
+                    // Always refresh products (respecting search state)
+                    if (productSearchTerm.trim()) {
+                      searchProducts()
+                    } else {
                       loadProducts()
                     }
                     // Refresh activity
-                    loadRecentActivity()
+                    refreshActivityLogs()
                   }}
                   className="text-gray-400 hover:text-gray-600"
                   data-testid="admin-product-form-modal-close-button"
@@ -2274,11 +2311,13 @@ const AdminDashboardPage = () => {
                   // Close modal first
                   setShowProductForm(false)
                   
-                  // Refresh data
-                  if (showProductsCatalog) {
+                  // Always refresh products (respecting search state)
+                  if (productSearchTerm.trim()) {
+                    searchProducts()
+                  } else {
                     loadProducts()
                   }
-                  loadRecentActivity()
+                  refreshActivityLogs() // Refresh activity logs after creating product
                   loadDashboardStats() // Refresh stats after creating product
                   
                   // Show success message after a small delay to ensure modal is closed
@@ -2313,8 +2352,13 @@ const AdminDashboardPage = () => {
                 product={editingProduct}
                 onClose={() => setEditingProduct(null)}
                 onUpdate={() => {
-                  loadProducts()
-                  loadRecentActivity()
+                  // Refresh products (respecting search state)
+                  if (productSearchTerm.trim()) {
+                    searchProducts()
+                  } else {
+                    loadProducts()
+                  }
+                  refreshActivityLogs() // Refresh activity logs after editing product
                   loadDashboardStats() // Refresh stats after editing product
                 }}
                 logActivity={logActivity}
@@ -2330,8 +2374,13 @@ const AdminDashboardPage = () => {
           sale={editingSale}
           onClose={() => setEditingSale(null)}
           onUpdate={() => {
-            loadSales()
-            loadRecentActivity()
+            // Refresh sales (respecting search state)
+            if (saleSearchTerm.trim()) {
+              searchSales()
+            } else {
+              loadSales()
+            }
+            refreshActivityLogs() // Refresh activity logs after editing sale
             loadDashboardStats() // Refresh stats after editing sale
           }}
           logActivity={logActivity}
@@ -2371,7 +2420,13 @@ const AdminDashboardPage = () => {
               <CategoryForm
                 onSuccess={() => {
                   setShowCategoryForm(false)
-                  loadCategories()
+                  // Refresh categories (respecting search state)
+                  if (categorySearchTerm.trim()) {
+                    searchCategories()
+                  } else {
+                    loadCategories()
+                  }
+                  refreshActivityLogs() // Refresh activity logs after creating category
                 }}
                 logActivity={logActivity}
               />
@@ -2402,7 +2457,13 @@ const AdminDashboardPage = () => {
                   setEditingCategory(null)
                 }}
                 onUpdate={() => {
-                  loadCategories()
+                  // Refresh categories (respecting search state)
+                  if (categorySearchTerm.trim()) {
+                    searchCategories()
+                  } else {
+                    loadCategories()
+                  }
+                  refreshActivityLogs() // Refresh activity logs after editing category
                 }}
                 logActivity={logActivity}
               />
