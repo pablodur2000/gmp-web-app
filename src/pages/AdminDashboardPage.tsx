@@ -2441,16 +2441,22 @@ const AdminDashboardPage = () => {
 
       {/* Category Create Modal */}
       {showCategoryForm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+          data-testid="admin-category-create-modal"
+        >
           <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-medium">Crear Nueva Categoría</h3>
+                <h3 className="text-lg font-medium" data-testid="admin-category-form-modal-title">
+                  Crear Nueva Categoría
+                </h3>
                 <button
                   onClick={() => {
                     setShowCategoryForm(false)
                   }}
                   className="text-gray-400 hover:text-gray-600"
+                  data-testid="admin-category-form-modal-close-button"
                 >
                   <X className="w-6 h-6" />
                 </button>
