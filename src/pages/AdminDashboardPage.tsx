@@ -1524,6 +1524,7 @@ const AdminDashboardPage = () => {
                     ? 'bg-gradient-to-br from-purple-50 to-purple-100 border-purple-300 shadow-lg' 
                     : 'bg-gradient-to-br from-gray-50 to-white border-gray-200 hover:border-purple-300 hover:shadow-lg'
                 }`}
+                data-testid="admin-manage-categories-button"
               >
                 <div className="flex flex-col items-center text-center space-y-3">
                   <div className={`p-4 rounded-full transition-transform duration-300 group-hover:scale-110 ${
@@ -2086,7 +2087,7 @@ const AdminDashboardPage = () => {
               </div>
             ) : showCategoriesView ? (
               // Categories View
-              <div className="space-y-6">
+              <div className="space-y-6" data-testid="admin-categories-view">
                 {/* Add Category Section */}
                 <div className="bg-gradient-to-br from-purple-50 to-white border-2 border-purple-200 rounded-xl p-6 shadow-sm">
                   <div className="flex items-center justify-between mb-4">
@@ -2097,6 +2098,7 @@ const AdminDashboardPage = () => {
                     <button
                       onClick={() => setShowCategoryForm(true)}
                       className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors duration-200 flex items-center space-x-2"
+                      data-testid="admin-add-category-button"
                     >
                       <Plus className="w-4 h-4" />
                       <span>Nueva Categoría</span>
@@ -2115,11 +2117,11 @@ const AdminDashboardPage = () => {
                 </div>
                 
                 {loadingCategories ? (
-                  <div className="flex justify-center py-8">
+                  <div className="flex justify-center py-8" data-testid="admin-categories-loading">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
                   </div>
                 ) : categories.length === 0 ? (
-                  <p className="text-gray-500 text-center py-8">
+                  <p className="text-gray-500 text-center py-8" data-testid="admin-categories-empty-state">
                     {categorySearchTerm ? `No se encontraron categorías que coincidan con "${categorySearchTerm}"` : 'No se encontraron categorías. ¡Crea tu primera categoría!'}
                   </p>
                 ) : (
@@ -2130,46 +2132,67 @@ const AdminDashboardPage = () => {
                       if (categoryGroup.length === 0) return null
                       
                       return (
-                        <div key={mainCategory}>
-                          <h3 className="text-xl font-semibold text-gray-900 mb-4">
+                        <div key={mainCategory} data-testid={`admin-category-group-${mainCategory}`}>
+                          <h3 
+                            className="text-xl font-semibold text-gray-900 mb-4"
+                            data-testid={`admin-category-group-heading-${mainCategory}`}
+                          >
                             {mainCategory === 'cuero' ? 'Artesanías en Cuero' : 'Macramé Artesanal'}
                           </h3>
                           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {categoryGroup.map((category) => (
-                              <div key={category.id} className="bg-gray-50 rounded-lg p-4 border border-gray-200 hover:border-purple-300 transition-colors">
+                              <div 
+                                key={category.id} 
+                                className="bg-gray-50 rounded-lg p-4 border border-gray-200 hover:border-purple-300 transition-colors"
+                                data-testid={`admin-category-card-${category.id}`}
+                              >
                                 <div className="flex justify-between items-start mb-3">
-                                  <h4 className="font-semibold text-gray-900 text-base">
+                                  <h4 
+                                    className="font-semibold text-gray-900 text-base"
+                                    data-testid={`admin-category-name-${category.id}`}
+                                  >
                                     {category.name}
                                   </h4>
                                   <div className="flex space-x-2">
                                     <button 
                                       onClick={() => handleEditCategory(category)}
                                       className="text-purple-600 hover:text-purple-800 text-xs hover:bg-purple-50 px-2 py-1 rounded transition-colors"
+                                      data-testid={`admin-edit-category-button-${category.id}`}
                                     >
                                       Editar
                                     </button>
                                     <button 
                                       onClick={() => handleDeleteCategory(category)}
                                       className="text-red-600 hover:text-red-800 text-xs hover:bg-red-50 px-2 py-1 rounded transition-colors"
+                                      data-testid={`admin-delete-category-button-${category.id}`}
                                     >
                                       Eliminar
                                     </button>
                                   </div>
                                 </div>
                                 
-                                <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                                <p 
+                                  className="text-sm text-gray-600 mb-3 line-clamp-2"
+                                  data-testid={`admin-category-description-${category.id}`}
+                                >
                                   {category.description}
                                 </p>
                                 
                                 <div className="flex items-center justify-between">
-                                  <span className={`px-2 py-1 rounded text-xs font-medium ${
-                                    category.main_category === 'cuero' 
-                                      ? 'bg-amber-100 text-amber-800' 
-                                      : 'bg-stone-100 text-stone-800'
-                                  }`}>
+                                  <span 
+                                    className={`px-2 py-1 rounded text-xs font-medium ${
+                                      category.main_category === 'cuero' 
+                                        ? 'bg-amber-100 text-amber-800' 
+                                        : 'bg-stone-100 text-stone-800'
+                                    }`}
+                                    data-testid={`admin-category-main-category-badge-${category.id}`}
+                                  >
                                     {category.main_category === 'cuero' ? 'Cuero' : 'Macramé'}
                                   </span>
-                                  <span className="text-xs text-gray-500">
+                                  <span 
+                                    className="text-xs text-gray-500"
+                                    data-testid={`admin-category-product-count-${category.id}`}
+                                  >
                                     {category.product_count || 0} producto(s)
                                   </span>
                                 </div>

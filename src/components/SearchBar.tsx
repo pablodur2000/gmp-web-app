@@ -15,6 +15,8 @@ const SearchBar = ({ value, onChange, onSearch, placeholder, className = '' }: S
       return 'admin-product-search-input'
     } else if (placeholder.includes('ventas')) {
       return 'admin-sales-search-input'
+    } else if (placeholder.includes('categorías')) {
+      return 'admin-category-search-input'
     } else if (placeholder.includes('actividad') || placeholder.includes('recurso')) {
       return 'admin-activity-search-input'
     }
